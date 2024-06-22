@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -13,7 +14,7 @@ import (
 )
 
 // UploadFileToS3 uploads a file to an S3 bucket
-func UploadFileToS3(awsRegion, bucketName, filePath string) error {
+func UploadFileToS3(awsRegion, bucketName, filePath string, dirToWatch string, dashboardName string) error {
 	// Create a new session using the default AWS profile or environment variables
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion),
@@ -35,13 +36,23 @@ func UploadFileToS3(awsRegion, bucketName, filePath string) error {
 		return fmt.Errorf("failed to get file info: %v", err)
 	}
 
+	// set S3 key name using full file path except for the dirToWatch parent directories
+	// check if dirToWatch arg included a end / or not to create clean S3 key name
+	if strings.HasSuffix(dirToWatch, "/") {
+		fmt.Println("The string ends with a '/', slice it off")
+		dirToWatch = dirToWatch[:len(dirToWatch)-1]
+	}
+
+	keyName := strings.Replace(filePath, dirToWatch, dashboardName, 1)
+	fmt.Println("S3 keyName:", keyName)
+
 	// Create S3 service client
 	svc := s3.New(sess)
 
 	// Upload the file to S3
 	_, err = svc.PutObject(&s3.PutObjectInput{
 		Bucket:        aws.String(bucketName),
-		Key:           aws.String(filepath.Base(filePath)),
+		Key:           aws.String(keyName),
 		Body:          file,
 		ContentLength: aws.Int64(fileInfo.Size()),
 		ContentType:   aws.String("application/octet-stream"),
@@ -54,14 +65,15 @@ func UploadFileToS3(awsRegion, bucketName, filePath string) error {
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: file-watcher <directory_to_watch>")
+	if len(os.Args) < 3 {
+		fmt.Println("Usage: file-watcher <directory_to_watch> <dashboard_name>")
 		os.Exit(1)
 	}
 	awsRegion := "us-east-1"               // Replace with your AWS region
 	bucketName := "ifcb-data-sharer.files" // Replace with your S3 bucket name
 
 	dirToWatch := os.Args[1]
+	dashboardName := os.Args[2]
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -88,7 +100,8 @@ func main() {
 					}
 					fmt.Println("File created:", event.Name)
 
-					err = UploadFileToS3(awsRegion, bucketName, event.Name)
+					// new file added, upload to AWS
+					err = UploadFileToS3(awsRegion, bucketName, event.Name, dirToWatch, dashboardName)
 					if err != nil {
 						fmt.Println("Error uploading file:", err)
 					} else {
@@ -97,6 +110,13 @@ func main() {
 				}
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					fmt.Println("File modified:", event.Name)
+					// file modified, upload to AWS
+					err = UploadFileToS3(awsRegion, bucketName, event.Name, dirToWatch, dashboardName)
+					if err != nil {
+						fmt.Println("Error uploading file:", err)
+					} else {
+						fmt.Println("Successfully uploaded file to S3!")
+					}
 				}
 				if event.Op&fsnotify.Remove == fsnotify.Remove {
 					fmt.Println("File removed:", event.Name)
