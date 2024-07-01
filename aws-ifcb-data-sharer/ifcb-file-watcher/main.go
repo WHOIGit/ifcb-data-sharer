@@ -66,7 +66,7 @@ func UploadFileToS3(awsRegion, bucketName, filePath string, dirToWatch string, d
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: file-watcher <directory_to_watch> <dashboard_name>")
+		fmt.Println("Usage: ifcb-file-watcher <directory_to_watch> <dashboard_name>")
 		os.Exit(1)
 	}
 	awsRegion := "us-east-1"               // Replace with your AWS region

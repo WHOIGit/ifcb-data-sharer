@@ -2,3 +2,14 @@ variable "project_name" {
   description = "Project name"
   default     = "ifcb-data-sharer"
 }
+
+variable "bucket_name" {
+  description = "S3 bucket name"
+  default     = "ifcb-data-sharer.files"
+}
+
+variable "user_names" {
+  description = "Create IAM users with these names"
+  type        = list(string)
+  default     = ["eandrews"]
+}
