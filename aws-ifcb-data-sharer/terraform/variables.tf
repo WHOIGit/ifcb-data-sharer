@@ -13,3 +13,8 @@ variable "user_names" {
   type        = list(string)
   default     = ["eandrews"]
 }
+
+variable "aws_account_id" {
+  description = "AWS Account ID"
+  sensitive   = true
+}

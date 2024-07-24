@@ -28,24 +28,161 @@ resource "aws_iam_user_policy" "s3_users" {
 
 }
 EOT
-
 }
 
+# create the group and policies for each user to use Yarkon
+resource "aws_iam_group" "s3_users_yarkon" {
+  for_each = aws_iam_user.s3_users
+  name     = "${each.value.name}-yarkon"
+}
 
+resource "aws_iam_group_policy" "s3_users_yarkon" {
+  for_each = aws_iam_user.s3_users
+  name     = "${each.value.name}-yarkon-policy"
+  group    = "${each.value.name}-yarkon"
+
+  policy = <<EOT
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+        "Sid": "AllowServerToAccessSpecificBuckets",
+        "Effect": "Allow",
+        "Action": [
+            "s3:ListBucket",
+            "s3:GetBucketLocation"
+        ],
+        "Resource": "${module.s3_bucket.s3_bucket_arn}"
+    }, 
+    {
+        "Sid": "AllowUserActionsLimitedToSpecificBuckets",
+        "Effect": "Allow",
+        "Action": "s3:*",
+        "Resource": "${module.s3_bucket.s3_bucket_arn}/${each.value.name}/*"
+    }
+  ]
+
+}
+EOT
+}
+
+resource "aws_iam_group" "my_developers" {
+  name = "developers"
+  path = "/users/"
+}
+
+# Admin Yarkon resrouce
 resource "aws_iam_user" "yardon_admin" {
   name = "yarkon-admin"
   tags = {
     Project = "${var.project_name}"
   }
 }
+resource "aws_iam_user_policy_attachment" "yarkon_admin" {
+  user       = aws_iam_user.yardon_admin.name
+  policy_arn = aws_iam_policy.yarkon_admin.arn
+}
 
-resource "aws_iam_user_policy" "yardon_admin" {
-  name   = "yarkon-admin-policy"
-  user   = aws_iam_user.yardon_admin.name
+resource "aws_iam_role" "yarkon_admin" {
+  name               = "yarkon-admin-role"
+  assume_role_policy = <<EOT
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "ec2.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::${var.aws_account_id}:root"
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+}
+EOT
+
+  inline_policy {
+    name = "yarkon-inline-policy"
+
+    policy = <<EOT
+    {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowServerToIterateIAMEntities",
+            "Effect": "Allow",
+            "Action": [
+                "iam:Get*",
+                "iam:List*"
+            ],
+            "Resource": "arn:aws:iam::${var.aws_account_id}:*"
+        }, 
+        {
+            "Sid": "AllowServerToAssumeRole",
+            "Effect": "Allow",
+            "Action": "sts:AssumeRole",
+            "Resource": "arn:aws:iam::${var.aws_account_id}:role/yarkon-admin-role"
+        },
+        {
+            "Sid": "AllowServerToIterateBuckets",
+            "Effect": "Allow",
+            "Action": "s3:ListAllMyBuckets",
+            "Resource": "arn:aws:s3:::*"
+        }, 
+        {
+            "Sid": "AllowServerToAccessSpecificBuckets",
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket",
+                "s3:GetBucketLocation",
+                "s3:GetBucketCORS",
+                "s3:PutBucketCORS"
+            ],
+            "Resource": [
+                "${module.s3_bucket.s3_bucket_arn}"
+            ]
+        }, {
+            "Sid": "AllowUserActionsLimitedToSpecificBuckets",
+            "Effect": "Allow",
+            "Action": "s3:*",
+            "Resource": [
+                "${module.s3_bucket.s3_bucket_arn}/*"
+            ]
+        }
+    ]
+
+    }
+    EOT
+  }
+}
+resource "aws_iam_policy" "yarkon_admin" {
+  name = "yarkon-admin-policy"
+
   policy = <<EOT
 {
   "Version": "2012-10-17",
   "Statement": [
+    {
+        "Sid": "AllowServerToIterateIAMEntities",
+        "Effect": "Allow",
+        "Action": [
+            "iam:Get*",
+            "iam:List*"
+        ],
+        "Resource": "arn:aws:iam::${var.aws_account_id}:*"
+    }, 
+    {
+        "Sid": "AllowServerToAssumeRole",
+        "Effect": "Allow",
+        "Action": "sts:AssumeRole",
+        "Resource": "arn:aws:iam::${var.aws_account_id}:role/yarkon-admin-role"
+    },
     {
         "Sid": "AllowServerToIterateBuckets",
         "Effect": "Allow",
@@ -76,5 +213,4 @@ resource "aws_iam_user_policy" "yardon_admin" {
 
 }
 EOT
-
 }
