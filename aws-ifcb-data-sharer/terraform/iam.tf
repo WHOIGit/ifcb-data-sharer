@@ -1,3 +1,27 @@
+# IAM User for full S3 access
+resource "aws_iam_user" "prod_bucket" {
+  name = "${var.project_name}-s3-bucket"
+}
+
+resource "aws_iam_user_policy" "prod_bucket" {
+  user = aws_iam_user.prod_bucket.name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:*",
+        ]
+        Effect = "Allow"
+        Resource = [
+          "${module.s3_bucket.s3_bucket_arn}",
+          "${module.s3_bucket.s3_bucket_arn}/*"
+        ]
+      },
+    ]
+  })
+}
+
 # Manage external S3 users with different IAM user/policies
 
 resource "aws_iam_user" "s3_users" {
