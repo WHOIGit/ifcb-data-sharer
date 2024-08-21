@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,10 +12,24 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/fsnotify/fsnotify"
+	"github.com/joho/godotenv"
 )
 
+// use godot package to load/read the .env file and
+// return the value of the key
+func goDotEnvVariable(key string) string {
+	// load .env file
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		fmt.Println("Error loading .env file")
+		os.Exit(1)
+	}
+	return os.Getenv(key)
+}
+
 // UploadFileToS3 uploads a file to an S3 bucket
-func UploadFileToS3(awsRegion, bucketName, filePath string, dirToWatch string, dashboardName string) error {
+func UploadFileToS3(awsRegion, bucketName, filePath string, dirToWatch string, userName string, datasetName string) error {
 	// Create a new session using the default AWS profile or environment variables
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion),
@@ -42,8 +57,8 @@ func UploadFileToS3(awsRegion, bucketName, filePath string, dirToWatch string, d
 		fmt.Println("The string ends with a '/', slice it off")
 		dirToWatch = dirToWatch[:len(dirToWatch)-1]
 	}
-
-	keyName := strings.Replace(filePath, dirToWatch, dashboardName, 1)
+	bucketPath := userName + "/" + datasetName
+	keyName := strings.Replace(filePath, dirToWatch, bucketPath, 1)
 	fmt.Println("S3 keyName:", keyName)
 
 	// Create S3 service client
@@ -65,15 +80,40 @@ func UploadFileToS3(awsRegion, bucketName, filePath string, dirToWatch string, d
 }
 
 func main() {
-	if len(os.Args) < 3 {
-		fmt.Println("Usage: ifcb-file-watcher <directory_to_watch> <dashboard_name>")
+	if len(os.Args) < 4 {
+		fmt.Println("Usage: ifcb-file-watcher <directory_to_watch> <user_name> <dataset_name>")
 		os.Exit(1)
 	}
 	awsRegion := "us-east-1"               // Replace with your AWS region
 	bucketName := "ifcb-data-sharer.files" // Replace with your S3 bucket name
 
 	dirToWatch := os.Args[1]
-	dashboardName := os.Args[2]
+	userName := os.Args[2]
+	datasetName := os.Args[3]
+
+	// load .env file
+	err := godotenv.Load(".env")
+	aws_key := os.Getenv("AWS_ACCESS_KEY_ID")
+	fmt.Println("AWS Key", aws_key)
+	if err != nil {
+		fmt.Println("Error loading .env file. You need to put your AWS access key/secret key in .env file")
+		os.Exit(1)
+	}
+
+	// check if the dataset name is available, if not exit and prompt user
+	requestURL := "https://habon-ifcb.whoi.edu/api/export_metadata/" + datasetName
+	res, err := http.Get(requestURL)
+	if err != nil {
+		fmt.Printf("error making http request: %s\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("habon-ifcb: got response!", requestURL)
+	fmt.Printf("habon-ifcb: status code: %d\n", res.StatusCode)
+
+	if res.StatusCode == 200 {
+		fmt.Printf("ERROR. The Dataset Name you used - %s - is not available. Please choose a new dataset_name value.", datasetName)
+	}
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -101,7 +141,7 @@ func main() {
 					fmt.Println("File created:", event.Name)
 
 					// new file added, upload to AWS
-					err = UploadFileToS3(awsRegion, bucketName, event.Name, dirToWatch, dashboardName)
+					err = UploadFileToS3(awsRegion, bucketName, event.Name, dirToWatch, userName, datasetName)
 					if err != nil {
 						fmt.Println("Error uploading file:", err)
 					} else {
@@ -111,7 +151,7 @@ func main() {
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					fmt.Println("File modified:", event.Name)
 					// file modified, upload to AWS
-					err = UploadFileToS3(awsRegion, bucketName, event.Name, dirToWatch, dashboardName)
+					err = UploadFileToS3(awsRegion, bucketName, event.Name, dirToWatch, userName, datasetName)
 					if err != nil {
 						fmt.Println("Error uploading file:", err)
 					} else {

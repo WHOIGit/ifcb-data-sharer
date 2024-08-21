@@ -42,11 +42,24 @@ resource "aws_iam_user_policy" "s3_users" {
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Action": [
-        "s3:*"
-      ],
       "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": "${module.s3_bucket.s3_bucket_arn}"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject"
+      ],
       "Resource": "${module.s3_bucket.s3_bucket_arn}/${each.value.name}/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "s3:PutObject",
+      "Resource": "${module.s3_bucket.s3_bucket_arn}/${each.value.name}/*"
+      
     }
   ]
 

@@ -12,14 +12,32 @@ module "s3_bucket" {
 
   object_ownership = "BucketOwnerEnforced"
 
-  #attach_policy = true
-  # bucket policy to limit uploads to only IFCB file extensions
-
 }
+
+
 
 # create the directories for each user
 resource "aws_s3_object" "folders" {
   for_each = toset(var.user_names)
   bucket   = module.s3_bucket.s3_bucket_id
   key      = "${each.value}/"
+}
+
+module "s3_notification" {
+  source  = "terraform-aws-modules/s3-bucket/aws//modules/notification"
+  version = "4.1.0"
+
+  bucket = module.s3_bucket.s3_bucket_id
+
+  eventbridge = true
+
+  lambda_notifications = {
+    lambda1 = {
+      function_arn  = module.lambda_function.lambda_function_arn
+      function_name = module.lambda_function.lambda_function_name
+      events        = ["s3:ObjectCreated:*"]
+      //filter_prefix = "data/"
+      //filter_suffix = ".h5"
+    }
+  }
 }
