@@ -1,6 +1,7 @@
 import json
 import boto3
 import os
+import magic
 from pathlib import Path
 
 # import IFCB utilities from https://github.com/joefutrelle/pyifcb package
@@ -63,6 +64,17 @@ def lambda_handler(event, context):
             except Exception as e:
                 # error parsing HDR, delete file
                 print("validation error", e)
+                s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
+                print("file deleted")
+
+        if file_extension == ".roi":
+            # check if it's a binary data file
+            mime_type = magic.from_file("D20230729T032906_IFCB110.roi", mime=True)
+            if mime_type == "application/octet-stream":
+                print("valid ROI file.")
+                valid_file = True
+            else:
+                print("INVALID ROI file.")
                 s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
                 print("file deleted")
 

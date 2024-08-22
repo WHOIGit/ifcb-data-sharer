@@ -15,7 +15,7 @@ module "docker_image" {
   ecr_repo        = "validate-ifcb-files-lambda"
 
   use_image_tag = true
-  image_tag     = "1.5"
+  image_tag     = "1.9"
 
   source_path = "${path.module}/../lambdas/validate-ifcb-files"
 
@@ -27,7 +27,7 @@ module "docker_image" {
 
 module "lambda_function" {
   source  = "terraform-aws-modules/lambda/aws"
-  version = "7.2.1"
+  version = "7.7.1"
 
   function_name  = "validate-ifcb-files-lambda"
   description    = "Validate all files that uploaded by users, only allow valid ADC, HDR and ROI files"

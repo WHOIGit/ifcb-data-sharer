@@ -5,7 +5,7 @@ RUN : \
     && yum -y update --security \
     && yum clean all \
     && rm -rf /var/cache/yum \
-    && yum install git -y \
+    && yum install git file-devel -y \
     :
 
 WORKDIR ${LAMBDA_TASK_ROOT}
