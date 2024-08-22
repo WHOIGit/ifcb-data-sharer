@@ -69,7 +69,7 @@ def lambda_handler(event, context):
 
         if file_extension == ".roi":
             # check if it's a binary data file
-            mime_type = magic.from_file("D20230729T032906_IFCB110.roi", mime=True)
+            mime_type = magic.from_file(tmp_file, mime=True)
             if mime_type == "application/octet-stream":
                 print("valid ROI file.")
                 valid_file = True
