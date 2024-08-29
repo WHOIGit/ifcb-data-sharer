@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -26,6 +26,21 @@ func goDotEnvVariable(key string) string {
 		os.Exit(1)
 	}
 	return os.Getenv(key)
+}
+
+func removeSpecialCharacters(str string) string {
+	// replace any spaces with underscores
+	newString := strings.ReplaceAll(str, " ", "_")
+
+	// Define a regular expression that matches all characters except a-z, A-Z, 0-9, hyphen (-), and underscore (_)
+	reg, err := regexp.Compile("[^a-zA-Z0-9-_]+")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// Replace all occurrences of the pattern with an empty string
+	cleanString := reg.ReplaceAllString(newString, "")
+	return cleanString
 }
 
 // UploadFileToS3 uploads a file to an S3 bucket
@@ -89,7 +104,8 @@ func main() {
 
 	dirToWatch := os.Args[1]
 	userName := os.Args[2]
-	datasetName := os.Args[3]
+	fullDatasetName := os.Args[3]
+	datasetName := removeSpecialCharacters(fullDatasetName)
 
 	// load .env file
 	err := godotenv.Load(".env")
@@ -101,20 +117,22 @@ func main() {
 	}
 
 	// check if the dataset name is available, if not exit and prompt user
-	requestURL := "https://habon-ifcb.whoi.edu/api/export_metadata/" + datasetName
-	res, err := http.Get(requestURL)
-	if err != nil {
-		fmt.Printf("error making http request: %s\n", err)
-		os.Exit(1)
-	}
+	// problem here: if script starts and restarts, throws error
+	/*
+		requestURL := "https://habon-ifcb.whoi.edu/api/export_metadata/" + datasetName
+		res, err := http.Get(requestURL)
+		if err != nil {
+			fmt.Printf("error making http request: %s\n", err)
+			os.Exit(1)
+		}
 
-	fmt.Println("habon-ifcb: got response!", requestURL)
-	fmt.Printf("habon-ifcb: status code: %d\n", res.StatusCode)
+		fmt.Println("habon-ifcb: got response!", requestURL)
+		fmt.Printf("habon-ifcb: status code: %d\n", res.StatusCode)
 
-	if res.StatusCode == 200 {
-		fmt.Printf("ERROR. The Dataset Name you used - %s - is not available. Please choose a new dataset_name value.", datasetName)
-	}
-
+		if res.StatusCode == 200 {
+			fmt.Printf("ERROR. The Dataset Name you used - %s - is not available. Please choose a new dataset_name value.", datasetName)
+		}
+	*/
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
