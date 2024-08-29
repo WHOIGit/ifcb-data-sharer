@@ -7,9 +7,10 @@ from pathlib import Path
 # import IFCB utilities from https://github.com/joefutrelle/pyifcb package
 from ifcb.data.adc import AdcFile
 from ifcb.data.hdr import parse_hdr_file
+from ifcb.data.identifiers import parse
 
 s3_client = boto3.client("s3")
-valid_extensions = [".adc", ".hdr", ".roi"]
+valid_extensions = [".adc", ".hdr", ".roi", ".csv"]
 
 
 def lambda_handler(event, context):
@@ -71,13 +72,31 @@ def lambda_handler(event, context):
             # check if it's a binary data file
             mime_type = magic.from_file(tmp_file, mime=True)
             if mime_type == "application/octet-stream":
-                print("valid ROI file.")
-                valid_file = True
+                # check if file PID is valid
+                try:
+                    resp = parse("23r4slfjmlsjfls")
+                    print("valid ROI file.")
+                    valid_file = True
+                except Exception as e:
+                    # invalid pid, delete file
+                    print("validation error", e)
+                    s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
+                    print("file deleted")
             else:
                 print("INVALID ROI file.")
                 s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
                 print("file deleted")
 
+        if file_extension == ".csv":
+            # check if it's a csv file
+            mime_type = magic.from_file(tmp_file, mime=True)
+            if mime_type == "text/csv":
+                print("valid CSV file.")
+                valid_file = True
+            else:
+                print("INVALID CSV file.")
+                s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
+                print("file deleted")
         # delete file from tmp dir
         print("remove tmp file")
         os.remove(tmp_file)
