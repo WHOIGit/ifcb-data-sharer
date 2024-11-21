@@ -22,13 +22,19 @@ for i in $datasets; do
     echo $dataset_formatted_title
     echo $user
     # add dataset to ifcbdb
-    #docker exec -it ifcbdb python manage.py createdataset -t $dataset_formatted_title $dataset_id
+    echo "add dataset to ifcbdb"
+    docker exec -it ifcbdb_ifcbdb_1 python manage.py createdataset -t $dataset_formatted_title $dataset_id
+
     # set its data directory
-    #docker exec -it ifcbdb python manage.py adddirectory -k raw /data/primary/ifcb-data-sharer/$user/$dataset_title $dataset_id
+    echo "set dataset's data directory"
+    docker exec -it ifcbdb_ifcbdb_1 python manage.py adddirectory -k raw /data/primary/ifcb-data-sharer/$user/$dataset_title $dataset_id
+
+    # import metadata if exists
+    echo "import metadata if exists"
+    docker exec -it ifcbdb_ifcbdb_1 python manage.py importmetadata /data/primary/ifcb-data-sharer/$user/$dataset_title/metadatafile.csv
+
+    # sync ifcb data
+    echo "sync ifcb data"
+    docker exec -it ifcbdb_ifcbdb_1 python manage.py syncdataset $dataset_id
+
 done
-
-# import metadata if exists
-#docker exec -it ifcbdb python manage.py importmetadata /data/primary/ifcb-data-sharer/eandrews/sharer_test/metadatafile.csv
-
-# sync the data
-#docker exec -it ifcbdb python manage.py syncdataset sharer_test
