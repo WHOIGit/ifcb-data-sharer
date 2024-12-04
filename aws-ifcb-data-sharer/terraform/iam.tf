@@ -60,6 +60,12 @@ resource "aws_iam_user_policy" "s3_users" {
       "Action": "s3:PutObject",
       "Resource": "${module.s3_bucket.s3_bucket_arn}/${each.value.name}/*"
       
+    },
+    {
+      "Effect": "Allow",
+      "Action": "s3:DeleteObject",
+      "Resource": "${module.s3_bucket.s3_bucket_arn}/${each.value.name}/*"
+      
     }
   ]
 

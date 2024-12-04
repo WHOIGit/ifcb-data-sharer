@@ -23,8 +23,12 @@ def lambda_handler(event, context):
 
         # check the file extension
         # Extract the file extension (returns a tuple)
-        _, file_extension = os.path.splitext(s3_File_Name)
-        print("file_extension", file_extension)
+        s3_Root, file_extension = os.path.splitext(s3_File_Name)
+        user = s3_Root.split("/")[0]
+        dataset = s3_Root.split("/")[2]
+        print("file_extension", file_extension, user, dataset)
+        print("user", user)
+        print("dataset", dataset)
 
         if file_extension not in valid_extensions:
             # delete file from S3 if not in whitelist
@@ -51,6 +55,7 @@ def lambda_handler(event, context):
                 print("ADC length: ", adc.__len__())
                 print("ADC lid: ", adc.lid)
                 valid_file = True
+                dynamo_field = "hasAdc"
             except Exception as e:
                 # error parsing ADC, delete file
                 print("validation error", e)
@@ -62,6 +67,7 @@ def lambda_handler(event, context):
                 hdr = parse_hdr_file(tmp_file)
                 print("HDR file: ", hdr)
                 valid_file = True
+                dynamo_field = "hasHdr"
             except Exception as e:
                 # error parsing HDR, delete file
                 print("validation error", e)
@@ -74,9 +80,10 @@ def lambda_handler(event, context):
             if mime_type == "application/octet-stream":
                 # check if file PID is valid
                 try:
-                    resp = parse("23r4slfjmlsjfls")
+                    resp = parse(bin_pid)
                     print("valid ROI file.")
                     valid_file = True
+                    dynamo_field = "hasRoi"
                 except Exception as e:
                     # invalid pid, delete file
                     print("validation error", e)
@@ -93,6 +100,7 @@ def lambda_handler(event, context):
             if mime_type == "text/csv":
                 print("valid CSV file.")
                 valid_file = True
+                dynamo_field = "hasCsv"
             else:
                 print("INVALID CSV file.")
                 s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
@@ -106,6 +114,29 @@ def lambda_handler(event, context):
         return None
 
     if valid_file:
+        # save status to Dynamo
+        dynamodb = boto3.resource("dynamodb")
+        table_name = "ifcb-data-sharing"
+        table = dynamodb.Table(table_name)
+
+        try:
+            print("saving to Dynamo...")
+            # Dynamo needs float converted to Decimal for N type
+            response = table.update_item(
+                Key={
+                    "user": "user",
+                    "pid": bin_pid,
+                },
+                UpdateExpression=f"SET {dynamo_field} = :{dynamo_field}",
+                ExpressionAttributeValues={f":{dynamo_field}": True},
+                ReturnValues="UPDATED_NEW",
+            )
+            print(f"{bin_pid} saved")
+            print(response)
+        except Exception as err:
+            print(err)
+            return None
+
         return {
             "statusCode": 200,
             "body": json.dumps(f"{s3_File_Name} validated"),

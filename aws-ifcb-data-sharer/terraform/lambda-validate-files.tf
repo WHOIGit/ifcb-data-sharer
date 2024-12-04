@@ -15,7 +15,7 @@ module "docker_image" {
   ecr_repo        = "validate-ifcb-files-lambda"
 
   use_image_tag = true
-  image_tag     = "1.11"
+  image_tag     = "1.12"
 
   source_path = "${path.module}/../lambdas/validate-ifcb-files"
 
@@ -63,6 +63,13 @@ module "lambda_function" {
       resources = [
         "${module.s3_bucket.s3_bucket_arn}",
         "${module.s3_bucket.s3_bucket_arn}/*"
+      ]
+    },
+    DynamoDb = {
+      effect  = "Allow",
+      actions = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Query"],
+      resources = [
+        module.dynamodb_table.dynamodb_table_arn
       ]
     }
 

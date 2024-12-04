@@ -147,7 +147,7 @@ func main() {
 				if !ok {
 					return
 				}
-				fmt.Println("Event:", event)
+				// fmt.Println("Event:", event)
 
 				if event.Op&fsnotify.Create == fsnotify.Create {
 					fi, err := os.Stat(event.Name)
