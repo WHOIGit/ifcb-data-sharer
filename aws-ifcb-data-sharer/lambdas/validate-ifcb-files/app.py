@@ -25,7 +25,7 @@ def lambda_handler(event, context):
         # Extract the file extension (returns a tuple)
         s3_Root, file_extension = os.path.splitext(s3_File_Name)
         user = s3_Root.split("/")[0]
-        dataset = s3_Root.split("/")[2]
+        dataset = s3_Root.split("/")[1]
         print("file_extension", file_extension, user, dataset)
         print("user", user)
         print("dataset", dataset)
@@ -124,11 +124,15 @@ def lambda_handler(event, context):
             # Dynamo needs float converted to Decimal for N type
             response = table.update_item(
                 Key={
-                    "user": "user",
+                    "user": user,
                     "pid": bin_pid,
                 },
-                UpdateExpression=f"SET {dynamo_field} = :{dynamo_field}",
-                ExpressionAttributeValues={f":{dynamo_field}": True},
+                UpdateExpression=f"SET {dynamo_field} = :{dynamo_field}, dataset = :dataset, s3KeyRoot = :s3KeyRoot",
+                ExpressionAttributeValues={
+                    f":{dynamo_field}": True,
+                    ":dataset": dataset,
+                    ":s3KeyRoot": s3_Root,
+                },
                 ReturnValues="UPDATED_NEW",
             )
             print(f"{bin_pid} saved")

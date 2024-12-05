@@ -167,18 +167,18 @@ func main() {
 						fmt.Println("Successfully uploaded file to S3!")
 					}
 				}
-				/*
-					if event.Op&fsnotify.Write == fsnotify.Write {
-						fmt.Println("File modified:", event.Name)
-						// file modified, upload to AWS
-						err = UploadFileToS3(awsRegion, bucketName, event.Name, dirToWatch, userName, datasetName)
-						if err != nil {
-							fmt.Println("Error uploading file:", err)
-						} else {
-							fmt.Println("Successfully uploaded file to S3!")
-						}
+
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					fmt.Println("File modified:", event.Name)
+					// file modified, upload to AWS
+					err = UploadFileToS3(awsRegion, bucketName, event.Name, dirToWatch, userName, datasetName)
+					if err != nil {
+						fmt.Println("Error uploading file:", err)
+					} else {
+						fmt.Println("Successfully uploaded file to S3!")
 					}
-				*/
+				}
+
 				if event.Op&fsnotify.Remove == fsnotify.Remove {
 					fmt.Println("File removed:", event.Name)
 				}

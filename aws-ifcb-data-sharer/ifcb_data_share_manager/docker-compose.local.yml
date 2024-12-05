@@ -1,0 +1,34 @@
+volumes:
+  ifcb_data_share_manager_local_postgres_data: {}
+  ifcb_data_share_manager_local_postgres_data_backups: {}
+  
+
+services:
+  django:
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: ifcb_data_share_manager_local_django
+    container_name: ifcb_data_share_manager_local_django
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app:z
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    ports:
+      - '8000:8000'
+    command: /start
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: ifcb_data_share_manager_production_postgres
+    container_name: ifcb_data_share_manager_local_postgres
+    volumes:
+      - ifcb_data_share_manager_local_postgres_data:/var/lib/postgresql/data
+      - ifcb_data_share_manager_local_postgres_data_backups:/backups
+    env_file:
+      - ./.envs/.local/.postgres

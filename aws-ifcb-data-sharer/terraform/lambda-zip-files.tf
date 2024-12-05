@@ -39,7 +39,15 @@ module "lambda_function_zip" {
       resources = [
         module.dynamodb_table.dynamodb_table_arn
       ]
-    }
+    },
+    GetS3Objects = {
+      effect  = "Allow",
+      actions = ["s3:GetObject", "s3:PutObject"],
+      resources = [
+        "${module.s3_bucket.s3_bucket_arn}",
+        "${module.s3_bucket.s3_bucket_arn}/*"
+      ]
+    },
   }
 
   attach_policies    = true

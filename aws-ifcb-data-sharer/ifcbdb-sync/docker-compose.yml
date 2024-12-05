@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  site:
+    image: ubuntu
+    container_name: test-site
+    command: sleep 999999
+
+  ifcbdb-sync:
+    build:
+      context: .
+    image: ifcbdb-sync
+    privileged: true
+    volumes:
+      #- /opt/ifcbdb/ifcbdb/ifcb_data/primary/:/usr/src/app/data_files
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    env_file:
+      - ./.env
