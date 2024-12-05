@@ -1,7 +1,0 @@
-# PostgreSQL
-# ------------------------------------------------------------------------------
-POSTGRES_HOST=postgres
-POSTGRES_PORT=5432
-POSTGRES_DB=ifcb_data_share_manager
-POSTGRES_USER=KhdohLKMNTiqJFkxehPvUErnLzRQoONt
-POSTGRES_PASSWORD=gCrZesSHJGbyu94O4vEK6Q37p2vzVIpWCMCZzk57EfwRzmHdaViJ2WvJROjEX9Rv
