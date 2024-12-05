@@ -22,8 +22,10 @@ urlpatterns = [
     # User management
     path("users/", include("ifcb_data_share_manager.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
-    # Your stuff: custom urls includes go here
-    # ...
+    path(
+        "data-manager/",
+        include("ifcb_data_share_manager.data_manager.urls", namespace="data-manager"),
+    ),
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]
