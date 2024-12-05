@@ -24,10 +24,10 @@ def lambda_handler(event, context):
         # check the file extension
         # Extract the file extension (returns a tuple)
         s3_Root, file_extension = os.path.splitext(s3_File_Name)
-        user = s3_Root.split("/")[0]
+        username = s3_Root.split("/")[0]
         dataset = s3_Root.split("/")[1]
-        print("file_extension", file_extension, user, dataset)
-        print("user", user)
+        print("file_extension", file_extension, username, dataset)
+        print("user", username)
         print("dataset", dataset)
 
         if file_extension not in valid_extensions:
@@ -116,7 +116,7 @@ def lambda_handler(event, context):
     if valid_file:
         # save status to Dynamo
         dynamodb = boto3.resource("dynamodb")
-        table_name = "ifcb-data-sharing"
+        table_name = "ifcb-data-sharer-bins"
         table = dynamodb.Table(table_name)
 
         try:
@@ -124,7 +124,7 @@ def lambda_handler(event, context):
             # Dynamo needs float converted to Decimal for N type
             response = table.update_item(
                 Key={
-                    "user": user,
+                    "username": username,
                     "pid": bin_pid,
                 },
                 UpdateExpression=f"SET {dynamo_field} = :{dynamo_field}, dataset = :dataset, s3KeyRoot = :s3KeyRoot",

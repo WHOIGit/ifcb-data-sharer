@@ -15,7 +15,7 @@ module "lambda_function_zip" {
 
   event_source_mapping = {
     dynamodb = {
-      event_source_arn  = module.dynamodb_table.dynamodb_table_stream_arn
+      event_source_arn  = module.dynamodb_table_sharer.dynamodb_table_stream_arn
       starting_position = "LATEST"
 
       filter_criteria = [
@@ -37,7 +37,7 @@ module "lambda_function_zip" {
       effect  = "Allow",
       actions = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Query"],
       resources = [
-        module.dynamodb_table.dynamodb_table_arn
+        module.dynamodb_table_sharer.dynamodb_table_arn
       ]
     },
     GetS3Objects = {

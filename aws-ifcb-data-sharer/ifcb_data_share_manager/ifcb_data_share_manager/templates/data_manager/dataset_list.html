@@ -3,7 +3,7 @@
   ><i class="fa fa-plus"></i> Add Dataset</a
 >
 
-<h1>Datasets</h1>
+<h2>Datasets</h2>
 
 <table class="table">
   <thead>
@@ -21,7 +21,12 @@
         <th>{{ dataset.name }}</th>
         <td>{{ dataset.title }}</td>
         <td width="10%">
-          <a class="btn btn-primary" href="#" role="button">Manage</a>
+          <a
+            class="btn btn-primary"
+            href="{% url 'data_manager:dataset_detail' dataset.id %}"
+            role="button"
+            >Manage</a
+          >
         </td>
         <td width="10%">
           <a class="btn btn-danger" href="#" role="button">Delete</a>
