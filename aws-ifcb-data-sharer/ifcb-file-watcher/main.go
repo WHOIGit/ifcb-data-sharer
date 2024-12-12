@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/fsnotify/fsnotify"
 	"github.com/joho/godotenv"
+	"github.com/seqsense/s3sync"
 )
 
 // use godot package to load/read the .env file and
@@ -116,23 +117,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// check if the dataset name is available, if not exit and prompt user
-	// problem here: if script starts and restarts, throws error
-	/*
-		requestURL := "https://habon-ifcb.whoi.edu/api/export_metadata/" + datasetName
-		res, err := http.Get(requestURL)
-		if err != nil {
-			fmt.Printf("error making http request: %s\n", err)
-			os.Exit(1)
-		}
-
-		fmt.Println("habon-ifcb: got response!", requestURL)
-		fmt.Printf("habon-ifcb: status code: %d\n", res.StatusCode)
-
-		if res.StatusCode == 200 {
-			fmt.Printf("ERROR. The Dataset Name you used - %s - is not available. Please choose a new dataset_name value.", datasetName)
-		}
-	*/
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
@@ -216,5 +200,27 @@ func main() {
 	}
 
 	fmt.Printf("Watching directory tree: %s\n", dirToWatch)
+
+	// sync any existing files to AWS
+	// Create a new session using the default AWS profile or environment variables
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(awsRegion),
+	})
+	if err != nil {
+		fmt.Println("error creating session:", err)
+	}
+
+	syncManager := s3sync.New(sess)
+
+	// Sync from local to s3
+	if strings.HasSuffix(dirToWatch, "/") {
+		fmt.Println("The string ends with a '/', slice it off")
+		dirToWatch = dirToWatch[:len(dirToWatch)-1]
+	}
+
+	bucketSyncPath := "s3://" + bucketName + "/" + userName + "/" + datasetName
+	fmt.Println("Sync Bucket:", bucketSyncPath)
+	syncManager.Sync(dirToWatch, bucketSyncPath)
+
 	<-done
 }
