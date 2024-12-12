@@ -1,0 +1,1 @@
+nohup ./ifcb-file-watcher data_dir username “dataset name” > ifcb-file-watcher.log 2>&1 & echo $! > save_pid.txt
