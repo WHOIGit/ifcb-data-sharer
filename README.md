@@ -47,11 +47,19 @@ Once the script is executed, it will continue to monitor the specified data dire
 Use the following command to start it as a background process and save the process PID into a local file. You can use this PID to kill the ifcb-file-watcher process if needed. You can also monitor the script output in the `ifcb-file-watcher.log` file.
 
 ```
-nohup ./ifcb-file-watcher data_dir username “dataset name” > ifcb-file-watcher.log 2>&1 & echo $! > save_pid.txt
+nohup ./ifcb-file-watcher data_directory user_name “dataset name” > ifcb-file-watcher.log 2>&1 & echo $! > save_pid.txt
 
 ```
 
 ## How to stop
 
 1. Get the process PID from the `save_pid.txt` file.
-2. Kill the process: ``
+2. Kill the process: `kill -9 <your-PID>`
+
+## Optional "Sync Only" mode
+
+If you just need to sync an existing group of data files in a directory, you can run the script with the optional `-sync-only` flag before your arguments:
+
+```
+./ifcb-file-watcher -sync-only data_directory user_name “dataset name”
+```

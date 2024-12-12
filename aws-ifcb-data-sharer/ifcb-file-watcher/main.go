@@ -17,7 +17,7 @@ import (
 	"github.com/seqsense/s3sync"
 )
 
-// use godot package to load/read the .env file and
+// use godotenv package to load/read the .env file and
 // return the value of the key
 func goDotEnvVariable(key string) string {
 	// load .env file
