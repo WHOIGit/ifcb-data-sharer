@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -96,16 +97,20 @@ func UploadFileToS3(awsRegion, bucketName, filePath string, dirToWatch string, u
 }
 
 func main() {
-	if len(os.Args) < 4 {
+	// set optional sync-only flag
+	syncOnly := flag.Bool("sync-only", false, "One time operation to only run the Sync operation on existing files")
+	flag.Parse()
+
+	if flag.NArg() < 3 {
 		fmt.Println("Usage: ifcb-file-watcher <directory_to_watch> <user_name> <dataset_name>")
 		os.Exit(1)
 	}
 	awsRegion := "us-east-1"               // Replace with your AWS region
 	bucketName := "ifcb-data-sharer.files" // Replace with your S3 bucket name
 
-	dirToWatch := os.Args[1]
-	userName := os.Args[2]
-	fullDatasetName := os.Args[3]
+	dirToWatch := flag.Arg(0)
+	userName := flag.Arg(1)
+	fullDatasetName := flag.Arg(2)
 	datasetName := removeSpecialCharacters(fullDatasetName)
 
 	// load .env file
@@ -182,26 +187,29 @@ func main() {
 	}()
 
 	// Walk the directory tree and add each directory to the watcher
-	err = filepath.Walk(dirToWatch, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			err = watcher.Add(path)
+	if !*syncOnly {
+		err = filepath.Walk(dirToWatch, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
-			fmt.Println("Watching directory:", path)
+			if info.IsDir() {
+				err = watcher.Add(path)
+				if err != nil {
+					return err
+				}
+				fmt.Println("Watching directory:", path)
+			}
+			return nil
+		})
+		if err != nil {
+			log.Fatal(err)
 		}
-		return nil
-	})
-	if err != nil {
-		log.Fatal(err)
+
+		fmt.Printf("Watching directory tree: %s\n", dirToWatch)
 	}
 
-	fmt.Printf("Watching directory tree: %s\n", dirToWatch)
-
-	// sync any existing files to AWS
+	// Sync any existing files to AWS
+	//
 	// Create a new session using the default AWS profile or environment variables
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion),
@@ -219,8 +227,13 @@ func main() {
 	}
 
 	bucketSyncPath := "s3://" + bucketName + "/" + userName + "/" + datasetName
-	fmt.Println("Sync Bucket:", bucketSyncPath)
+	fmt.Println("Sync to Bucket:", bucketSyncPath)
 	syncManager.Sync(dirToWatch, bucketSyncPath)
+	fmt.Println("Sync Complete", bucketSyncPath)
 
+	if *syncOnly {
+		// exit the program if only syncing
+		os.Exit(0)
+	}
 	<-done
 }
