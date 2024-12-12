@@ -9,5 +9,13 @@ The IFCB Data Sharer allows multiple end users to share their IFCB data to the W
 
 ```
 cd /your-working-dir/
-curl -OL https://github.com/WHOIGit/ifcb-data-sharer/raw/refs/heads/main/ifcb-file-watcher ifcb-file-watcher
+curl -OL https://github.com/WHOIGit/ifcb-data-sharer/raw/refs/heads/main/ifcb-file-watcher
+chmod +x ifcb-file-watcher
+```
+
+3. Create a `.env` file in the same directory and add your AWS Key/Secret that you received from WHOI. Copy the example code from the `.env.example`:
+
+```
+AWS_ACCESS_KEY_ID=your-key-here
+AWS_SECRET_ACCESS_KEY=your-secret-here
 ```
