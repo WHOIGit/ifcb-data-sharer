@@ -58,8 +58,12 @@ nohup ./ifcb-file-watcher data_directory user_name “dataset name” > ifcb-fil
 
 ## Optional "Sync Only" mode
 
-If you just need to sync an existing group of data files in a directory, you can run the script with the optional `-sync-only` flag before your arguments. This operational mode will end the program after the sync is complete:
+If you just need to upload or sync an existing group of data files in a directory, you can run the script with the optional `-sync-only` flag before your arguments. This operation will end the program after the sync is complete:
 
 ```
 ./ifcb-file-watcher -sync-only data_directory user_name “dataset name”
 ```
+
+## Notes on data syncing
+
+The data sync is a one-way sync from your IFCB device to WHOI's cloud storage. IF you add new files to the IFCB that are not currently present in the cloud or update existing files, then those files will be uploaded and synced. However, if you delete files from the IFCB device, this WILL NOT delete those files from the cloud.
