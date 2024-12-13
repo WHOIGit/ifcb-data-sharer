@@ -68,6 +68,11 @@ func UploadFileToS3(awsRegion, bucketName, filePath string, dirToWatch string, u
 		return fmt.Errorf("failed to get file info: %v", err)
 	}
 
+	// Check if it's a file or something else
+	if !fileInfo.Mode().IsRegular() {
+		return fmt.Errorf("It's not a regular file (could be a directory or something else)")
+	}
+
 	// set S3 key name using full file path except for the dirToWatch parent directories
 	// check if dirToWatch arg included a end / or not to create clean S3 key name
 	if strings.HasSuffix(dirToWatch, "/") {

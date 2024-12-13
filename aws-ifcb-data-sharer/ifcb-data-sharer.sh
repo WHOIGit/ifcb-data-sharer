@@ -30,8 +30,8 @@ for i in $datasets; do
     docker exec -it ifcbdb_ifcbdb_1 python manage.py adddirectory -k raw /data/primary/ifcb-data-sharer/$user/$dataset_title $dataset_id
 
     # import metadata if exists
-    echo "import metadata if exists"
-    docker exec -it ifcbdb_ifcbdb_1 python manage.py importmetadata /data/primary/ifcb-data-sharer/$user/$dataset_title/metadatafile.csv
+    # echo "import metadata if exists"
+    # docker exec -it ifcbdb_ifcbdb_1 python manage.py importmetadata /data/primary/ifcb-data-sharer/$user/$dataset_title/metadatafile.csv
 
     # sync ifcb data
     echo "sync ifcb data"
