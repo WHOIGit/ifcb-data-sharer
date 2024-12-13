@@ -10,7 +10,7 @@ Once installed and executed, the `ifcb-file-watcher` script will continuosly mon
 2. Install the `ifcb-file-watcher` script on to your IFCB device:
 
 ```
-cd /your-working-dir/
+cd /home/your-user
 curl -OL https://github.com/WHOIGit/ifcb-data-sharer/raw/refs/heads/main/ifcb-file-watcher
 chmod +x ifcb-file-watcher
 ```
@@ -34,7 +34,7 @@ ifcb-file-watcher
 The `ifcb-file-watcher` script requires the following arguments:
 
 - Directory to watch - This is the absolute or relative path to the root of the data directory for the IFCB files: `/home/user/ifcb-data`
-- User name - The user name provided to you by WHOI to access the IFCB Dashboard: `my-user-name`
+- User name - The user name provided to you by WHOI: `my-user-name`
 - Dataset name - The name of the dataset you want to add these files to on the IFCB Dashboard: `my-dataset`
 
 ```
