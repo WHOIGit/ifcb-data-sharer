@@ -4,7 +4,7 @@ The IFCB Data Sharer allows multiple end users to share their IFCB data to the W
 
 Once installed and executed, the `ifcb-file-watcher` script will continuosly monitor a specified data directory on the IFCB device. Any new files created by the IFCB will by automatically uploaded to an AWS data pipeline that will save them to habon-ifcb.whoi.edu
 
-## How to install
+## How to install on IFCB (Linux)
 
 1. Contact mbrosnahan@whoi.edu to request a user account and receive access credentials
 2. Install the `ifcb-file-watcher` script on to your IFCB device:
@@ -67,3 +67,7 @@ If you just need to upload or sync an existing group of data files in a director
 ## Notes on data syncing
 
 The data sync is a one-way sync from your IFCB device to WHOI's cloud storage. IF you add new files to the IFCB that are not currently present in the cloud or update existing files, then those files will be uploaded and synced. However, if you delete files from the IFCB device, this WILL NOT delete those files from the cloud.
+
+## Windows version
+
+To sync data from a Windows-based system, you can download the `ifcb-file-watcher-windows` script and follow the same general instructions as Linux.
