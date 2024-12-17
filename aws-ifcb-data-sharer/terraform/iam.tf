@@ -25,8 +25,9 @@ resource "aws_iam_user_policy" "prod_bucket" {
 # Manage external S3 users with different IAM user/policies
 
 resource "aws_iam_user" "s3_users" {
-  for_each = toset(var.user_names)
-  name     = each.value
+  for_each      = toset(var.user_names)
+  name          = each.value
+  force_destroy = true
   tags = {
     Project = "${var.project_name}"
   }
