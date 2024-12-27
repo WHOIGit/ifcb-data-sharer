@@ -1,0 +1,105 @@
+#!/bin/bash
+
+# Define log file for PIDs
+LOG_FILE="process.log"
+
+# Function to display help and usage information
+usage() {
+    cat <<EOF
+Usage: $0 {start|stop} [OPTIONS]
+
+Commands:
+  start <target_directory> <account> <target_time_series>
+      Start the Go executable as a background process.
+
+  stop <target_directory|target_time_series>
+      Stop running processes associated with the target directory or time series.
+
+Options:
+  -h, --help
+      Display this help message.
+
+Examples:
+  $0 start /path/to/dir account timeseries1
+      Start a process for the specified directory and time series.
+
+  $0 stop /path/to/dir
+      Stop processes associated with the specified directory.
+
+  $0 stop timeseries1
+      Stop processes associated with the specified time series.
+EOF
+}
+
+# Function to start a Go executable
+start() {
+    local target_dir=$1
+    local account=$2
+    local target_time_series=$3
+
+    # Validate inputs
+    if [[ -z "$target_dir" || -z "$account" || -z "$target_time_series" ]]; then
+        echo "Error: Missing required inputs for 'start'."
+        usage
+        exit 1
+    fi
+
+    # Run the Go executable as a nohup process
+    nohup ./ifcb-file-watcher "$target_dir" "$account" "$target_time_series" > /dev/null 2>&1 &
+
+    # Get the PID of the last background process
+    local pid=$!
+
+    # Log the PID with the corresponding target directory and time series
+    echo "$pid $target_dir $target_time_series" >> "$LOG_FILE"
+
+    echo "Started process with PID $pid for target directory '$target_dir' and time series '$target_time_series'"
+}
+
+# Function to stop processes
+stop() {
+    local target=$1
+
+    # Validate inputs
+    if [[ -z "$target" ]]; then
+        echo "Error: Missing required input for 'stop'."
+        usage
+        exit 1
+    fi
+
+    # Read the log file and filter relevant entries
+    while IFS=' ' read -r pid dir ts; do
+        if [[ "$dir" == "$target" || "$ts" == "$target" ]]; then
+            # Kill the process
+            kill "$pid" 2>/dev/null
+            if [[ $? -eq 0 ]]; then
+                echo "Stopped process with PID $pid for target directory '$dir' and time series '$ts'"
+            else
+                echo "Failed to stop process with PID $pid. It may not be running."
+            fi
+        fi
+    done < <(grep "$target" "$LOG_FILE")
+
+    # Remove the killed processes from the log file
+    grep -vE "$target" "$LOG_FILE" > "${LOG_FILE}.tmp" && mv "${LOG_FILE}.tmp" "$LOG_FILE"
+}
+
+# Main script logic
+case $1 in
+    start)
+        shift
+        start "$@"
+        ;;
+    stop)
+        shift
+        stop "$@"
+        ;;
+    -h|--help)
+        usage
+        ;;
+    *)
+        echo "Error: Invalid or missing command."
+        usage
+        exit 1
+        ;;
+esac
