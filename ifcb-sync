@@ -34,7 +34,7 @@ EOF
 # Function to start a Go executable
 start() {
     local target_dir=$1
-    local target_time_series=$3
+    local target_time_series=$2
 
     # Validate inputs
     if [[ -z "$target_dir" || -z "$target_time_series" ]]; then
@@ -44,8 +44,8 @@ start() {
     fi
 
     # Run the Go executable as a nohup process
-    nohup ./ifcb-file-watcher "$target_dir" "$target_time_series" > /dev/null 2>&1 &
-
+    # nohup ./ifcb-file-watcher "$target_dir" "$target_time_series" > /dev/null 2>&1 &
+    nohup ./ifcb-file-watcher "$target_dir" "$target_time_series" > ifcb-file-watcher.log 2>&1 & echo $! > save_pid.txt
     # Get the PID of the last background process
     local pid=$!
 

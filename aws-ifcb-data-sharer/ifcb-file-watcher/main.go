@@ -74,11 +74,15 @@ func UploadFileToS3(awsRegion, bucketName, filePath string, dirToWatch string, u
 	}
 
 	// set S3 key name using full file path except for the dirToWatch parent directories
+	// handle dirToWatch that uses relative pathname in same pwd
+	dirToWatch, _ = strings.CutPrefix(dirToWatch, "./")
+
 	// check if dirToWatch arg included a end / or not to create clean S3 key name
 	if strings.HasSuffix(dirToWatch, "/") {
 		fmt.Println("The string ends with a '/', slice it off")
 		dirToWatch = dirToWatch[:len(dirToWatch)-1]
 	}
+	fmt.Println("dirToWatch:", dirToWatch)
 	bucketPath := userName + "/" + datasetName
 	keyName := strings.Replace(filePath, dirToWatch, bucketPath, 1)
 	fmt.Println("S3 keyName:", keyName)
@@ -121,6 +125,7 @@ func main() {
 	err := godotenv.Load(".env")
 	aws_key := os.Getenv("AWS_ACCESS_KEY_ID")
 	userName := os.Getenv("USER_ACCOUNT")
+	fmt.Println("userName", userName)
 	fmt.Println("AWS Key", aws_key)
 
 	if err != nil {
