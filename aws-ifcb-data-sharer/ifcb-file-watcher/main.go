@@ -106,22 +106,23 @@ func main() {
 	syncOnly := flag.Bool("sync-only", false, "One time operation to only run the Sync operation on existing files")
 	flag.Parse()
 
-	if flag.NArg() < 3 {
-		fmt.Println("Usage: ifcb-file-watcher <directory_to_watch> <user_name> <dataset_name>")
+	if flag.NArg() < 2 {
+		fmt.Println("Usage: ifcb-file-watcher <directory_to_watch> <dataset_name>")
 		os.Exit(1)
 	}
 	awsRegion := "us-east-1"               // Replace with your AWS region
 	bucketName := "ifcb-data-sharer.files" // Replace with your S3 bucket name
 
 	dirToWatch := flag.Arg(0)
-	userName := flag.Arg(1)
-	fullDatasetName := flag.Arg(2)
+	fullDatasetName := flag.Arg(1)
 	datasetName := removeSpecialCharacters(fullDatasetName)
 
 	// load .env file
 	err := godotenv.Load(".env")
 	aws_key := os.Getenv("AWS_ACCESS_KEY_ID")
+	userName := os.Getenv("USER_ACCOUNT")
 	fmt.Println("AWS Key", aws_key)
+
 	if err != nil {
 		fmt.Println("Error loading .env file. You need to put your AWS access key/secret key in .env file")
 		os.Exit(1)

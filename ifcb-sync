@@ -9,7 +9,7 @@ usage() {
 Usage: $0 {start|stop} [OPTIONS]
 
 Commands:
-  start <target_directory> <account> <target_time_series>
+  start <target_directory> <target_time_series>
       Start the Go executable as a background process.
 
   stop <target_directory|target_time_series>
@@ -20,7 +20,7 @@ Options:
       Display this help message.
 
 Examples:
-  $0 start /path/to/dir account timeseries1
+  $0 start /path/to/dir timeseries1
       Start a process for the specified directory and time series.
 
   $0 stop /path/to/dir
@@ -34,18 +34,17 @@ EOF
 # Function to start a Go executable
 start() {
     local target_dir=$1
-    local account=$2
     local target_time_series=$3
 
     # Validate inputs
-    if [[ -z "$target_dir" || -z "$account" || -z "$target_time_series" ]]; then
+    if [[ -z "$target_dir" || -z "$target_time_series" ]]; then
         echo "Error: Missing required inputs for 'start'."
         usage
         exit 1
     fi
 
     # Run the Go executable as a nohup process
-    nohup ./ifcb-file-watcher "$target_dir" "$account" "$target_time_series" > /dev/null 2>&1 &
+    nohup ./ifcb-file-watcher "$target_dir" "$target_time_series" > /dev/null 2>&1 &
 
     # Get the PID of the last background process
     local pid=$!
