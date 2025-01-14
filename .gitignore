@@ -58,3 +58,7 @@ terraform.rc
 
 .env
 files/
+ifcb-file-watcher.log
+process.log
+process.log.tmp
+save_pid.txt
