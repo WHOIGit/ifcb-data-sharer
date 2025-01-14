@@ -6,7 +6,7 @@ LOG_FILE="process.log"
 # Function to display help and usage information
 usage() {
     cat <<EOF
-Usage: $0 {start|stop} [OPTIONS]
+Usage: $0 {start|stop|sync} [OPTIONS]
 
 Commands:
   start <target_directory> <target_time_series>
@@ -14,6 +14,9 @@ Commands:
 
   stop <target_directory|target_time_series>
       Stop running processes associated with the target directory or time series.
+
+  sync <target_directory> <target_time_series>
+      One-time operation to upload or sync an existing group of data files to a time series.
 
 Options:
   -h, --help
@@ -28,6 +31,9 @@ Examples:
 
   $0 stop timeseries1
       Stop processes associated with the specified time series.
+
+  $0 sync /path/to/dir timeseries1
+      One-time operation to upload or sync an existing group of data files.
 EOF
 }
 
@@ -45,7 +51,7 @@ start() {
 
     # Run the Go executable as a nohup process
     # nohup ./ifcb-file-watcher "$target_dir" "$target_time_series" > /dev/null 2>&1 &
-    nohup ./ifcb-file-watcher "$target_dir" "$target_time_series" > ifcb-file-watcher.log 2>&1 & echo $! > save_pid.txt
+    nohup ./ifcb-file-watcher "$target_dir" "$target_time_series" > ifcb-file-watcher.log 2>&1 &
     # Get the PID of the last background process
     local pid=$!
 
@@ -83,6 +89,24 @@ stop() {
     grep -vE "$target" "$LOG_FILE" > "${LOG_FILE}.tmp" && mv "${LOG_FILE}.tmp" "$LOG_FILE"
 }
 
+# Function to run one-time sync operation
+sync() {
+    local target_dir=$1
+    local target_time_series=$2
+
+    # Validate inputs
+    if [[ -z "$target_dir" || -z "$target_time_series" ]]; then
+        echo "Error: Missing required inputs for 'sync'."
+        usage
+        exit 1
+    fi
+
+    # Run the Go executable to sync
+    ./ifcb-file-watcher -sync-only "$target_dir" "$target_time_series" > ifcb-file-watcher.log 2>&1 &
+
+    echo "Sync complete for target directory '$target_dir' and time series '$target_time_series'"
+}
+
 # Main script logic
 case $1 in
     start)
@@ -92,6 +116,10 @@ case $1 in
     stop)
         shift
         stop "$@"
+        ;;
+    sync)
+        shift
+        sync "$@"
         ;;
     -h|--help)
         usage
