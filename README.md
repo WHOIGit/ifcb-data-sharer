@@ -2,15 +2,17 @@
 
 The IFCB Data Sharer allows multiple end users to share their IFCB data to the WHOI HABON IFCB dashboard using an automated Linux script.
 
-Once installed and executed, the `ifcb-file-watcher` script will continuosly monitor a specified data directory on the IFCB device. Any new files created by the IFCB will by automatically uploaded to an AWS data pipeline that will save them to habon-ifcb.whoi.edu
+Once installed and executed, the `ifcb-sync` command will continuosly monitor a specified data directory on the IFCB device. Any new files created by the IFCB will by automatically uploaded to an AWS data pipeline that will save them to habon-ifcb.whoi.edu
 
 ## How to install on IFCB (Linux)
 
 1. Contact mbrosnahan@whoi.edu to request a user account and receive access credentials
-2. Install the `ifcb-file-watcher` script on to your IFCB device:
+2. Install the `ifcb-sync` script on to your IFCB device (if Git is already installed, skip the first step):
 
 ```
-cd /home/your-user
+apt install git
+cd /home/ifcb
+git clone
 curl -OL https://github.com/WHOIGit/ifcb-data-sharer/raw/refs/heads/main/ifcb-file-watcher
 chmod +x ifcb-file-watcher
 ```
