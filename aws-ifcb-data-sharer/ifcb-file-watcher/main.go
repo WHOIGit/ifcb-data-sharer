@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"log"
@@ -105,9 +106,61 @@ func UploadFileToS3(awsRegion, bucketName, filePath string, dirToWatch string, u
 	return nil
 }
 
+// UploadFileToS3 uploads a file to an S3 bucket
+func CheckTimeSeriesExists(awsRegion, bucketName, userName string, datasetName string) bool {
+	// Create a new session using the default AWS profile or environment variables
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(awsRegion),
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// Create S3 service client
+	svc := s3.New(sess)
+
+	resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(bucketName), Prefix: aws.String(userName + "/"), Delimiter: aws.String("/")})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(resp.CommonPrefixes)
+	fmt.Println("Found", len(resp.Contents), "items in bucket", bucketName)
+	fmt.Println("")
+
+	return true
+}
+
+// askForConfirmation asks the user for confirmation. A user must type in "yes" or "no" and
+// then press enter. It has fuzzy matching, so "y", "Y", "yes", "YES", and "Yes" all count as
+// confirmations. If the input is not recognized, it will ask again. The function does not return
+// until it gets a valid response from the user.
+func askForConfirmation(s string) bool {
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		fmt.Printf("%s [y/n]: ", s)
+
+		response, err := reader.ReadString('\n')
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		response = strings.ToLower(strings.TrimSpace(response))
+
+		if response == "y" || response == "yes" {
+			return true
+		} else if response == "n" || response == "no" {
+			return false
+		}
+	}
+}
+
 func main() {
 	// set optional sync-only flag
 	syncOnly := flag.Bool("sync-only", false, "One time operation to only run the Sync operation on existing files")
+	// set optional check for existing times series name
+	checkTimeSeries := flag.Bool("check-time-series", false, "Whether to run a confirmation check on time series name")
 	flag.Parse()
 
 	if flag.NArg() < 2 {
@@ -131,6 +184,18 @@ func main() {
 	if err != nil {
 		fmt.Println("Error loading .env file. You need to put your AWS access key/secret key in .env file")
 		os.Exit(1)
+	}
+
+	// optional check if times series exists
+	if *checkTimeSeries {
+		confirm := askForConfirmation("This time series already exists in your account. Please confirm that you want to use an existing account.")
+		if confirm {
+			res := CheckTimeSeriesExists(awsRegion, bucketName, userName, datasetName)
+			fmt.Println("Check response", res)
+		} else {
+			fmt.Println("Request canceled.")
+			return
+		}
 	}
 
 	watcher, err := fsnotify.NewWatcher()

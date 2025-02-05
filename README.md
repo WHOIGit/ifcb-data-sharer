@@ -10,66 +10,48 @@ Once installed and executed, the `ifcb-sync` command will continuosly monitor a 
 2. Install the `ifcb-sync` script on to your IFCB device (if Git is already installed, skip the first step):
 
 ```
-apt install git
+sudo apt install git
 cd /home/ifcb
-git clone
-curl -OL https://github.com/WHOIGit/ifcb-data-sharer/raw/refs/heads/main/ifcb-file-watcher
-chmod +x ifcb-file-watcher
+git clone https://github.com/WHOIGit/ifcb-data-sharer.git
+chmod +x ifcb-sync
 ```
 
-3. Create a new `.env` file in the same directory and add your AWS Key/Secret that you received from WHOI. Copy the example code from the `.env.example`:
+3. Create a new `.env` file in the same directory. Copy the example code from the `.env.example`:
+
+```
+cp .env.example .env
+```
+
+4. Update the .env variables to the AWS Key/AWS Secret/User Account that you received from WHOI.
 
 ```
 AWS_ACCESS_KEY_ID=your-key-here
 AWS_SECRET_ACCESS_KEY=your-secret-here
-```
-
-4. Your directory structure should look like:
-
-```
-ifcb-file-watcher
-.env
+USER_ACCOUNT=your-user-account
 ```
 
 ## How to use
 
-The `ifcb-file-watcher` script requires the following arguments:
+The `ifcb-sync` script main commands:
 
-- Directory to watch - This is the absolute or relative path to the root of the data directory for the IFCB files: `/home/user/ifcb-data`
-- User name - The user name provided to you by WHOI: `my-user-name`
-- Dataset name - The name of the dataset you want to add these files to on the IFCB Dashboard: `my-dataset`
+### ifcb-sync start <target_directory> <target_time_series>
 
-```
-./ifcb-file-watcher
-Usage: ifcb-file-watcher <directory_to_watch> <user_name> <dataset_name>
-```
+- Start the IFCB file watcher as a background process. Once the script is started, it will sync all existing files and then continue to monitor the specified data directory for any new files. You can also monitor the script output in the `ifcb-file-watcher.log` file.
 
-Once the script is executed, it will sync all existing files and then continue to monitor the specified data directory for any new files. To keep it running when you exit your terminal session you need to start it as a background process.
+- <target_directory> - This is the absolute or relative path to the root of the data directory for the IFCB files: ex. `/home/ifcb/ifcbdata`
 
-Use the following command to start it as a background process and save the process PID into a local file. You can use this PID to kill the ifcb-file-watcher process if needed. You can also monitor the script output in the `ifcb-file-watcher.log` file.
+- <target_time_series> - The name of the time series you want to add these files to on the IFCB Dashboard: `my-dataset`
 
-```
-nohup ./ifcb-file-watcher data_directory user_name “dataset name” > ifcb-file-watcher.log 2>&1 & echo $! > save_pid.txt
+### ifcb-sync stop <target_directory|target_time_series>
 
-```
+- Stops running processes associated with the target directory or time series. You only need to supply one of the options.
 
-## How to stop
+Optional "Sync Only" mode
 
-1. Get the process PID from the `save_pid.txt` file.
-2. Kill the process: `kill -9 <your-PID>`
+### ifcb-sync sync <target_directory> <target_time_series>
 
-## Optional "Sync Only" mode
+If you just need to upload or sync an existing group of data files in a directory, you can run the script in "sync-only" mode. This operation will end the program after the sync is complete. It will not monitor the directory for new files.
 
-If you just need to upload or sync an existing group of data files in a directory, you can run the script with the optional `-sync-only` flag before your arguments. This operation will end the program after the sync is complete:
-
-```
-./ifcb-file-watcher -sync-only data_directory user_name “dataset name”
-```
-
-## Notes on data syncing
+### Notes on data syncing
 
 The data sync is a one-way sync from your IFCB device to WHOI's cloud storage. IF you add new files to the IFCB that are not currently present in the cloud or update existing files, then those files will be uploaded and synced. However, if you delete files from the IFCB device, this WILL NOT delete those files from the cloud.
-
-## Windows version
-
-To sync data from a Windows-based system, you can download the `ifcb-file-watcher-windows` script and follow the same general instructions as Linux.
