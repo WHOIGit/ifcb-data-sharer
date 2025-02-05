@@ -126,9 +126,18 @@ func CheckTimeSeriesExists(awsRegion, bucketName, userName string, datasetName s
 
 	fmt.Println(resp.CommonPrefixes)
 	fmt.Println("Found", len(resp.Contents), "items in bucket", bucketName)
-	fmt.Println("")
 
-	return true
+	for index, value := range resp.CommonPrefixes {
+		fmt.Println("dataset:", datasetName)
+		fmt.Println("Index:", index, "Value:", value.String())
+		tsExists := strings.Contains(value.String(), datasetName)
+		fmt.Println("TS exists:", tsExists)
+		// return and break the loop if dataset found
+		if tsExists {
+			return tsExists
+		}
+	}
+	return false
 }
 
 // askForConfirmation asks the user for confirmation. A user must type in "yes" or "no" and
@@ -188,11 +197,11 @@ func main() {
 
 	// optional check if times series exists
 	if *checkTimeSeries {
+		res := CheckTimeSeriesExists(awsRegion, bucketName, userName, datasetName)
+		fmt.Println("Check response", res)
+
 		confirm := askForConfirmation("This time series already exists in your account. Please confirm that you want to use an existing account.")
-		if confirm {
-			res := CheckTimeSeriesExists(awsRegion, bucketName, userName, datasetName)
-			fmt.Println("Check response", res)
-		} else {
+		if !confirm {
 			fmt.Println("Request canceled.")
 			return
 		}
