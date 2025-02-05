@@ -129,9 +129,11 @@ func CheckTimeSeriesExists(awsRegion, bucketName, userName string, datasetName s
 
 	for index, value := range resp.CommonPrefixes {
 		fmt.Println("dataset:", datasetName)
-		fmt.Println("Index:", index, "Value:", value.String())
-		tsExists := strings.Contains(value.String(), datasetName)
+		fmt.Println("Index:", index, "Value:", aws.StringValue(value.Prefix))
+		tsExists := strings.Contains(aws.StringValue(value.Prefix), datasetName)
 		fmt.Println("TS exists:", tsExists)
+		arrayOfString := strings.Split(aws.StringValue(value.Prefix), "/")
+		fmt.Println("Array:", arrayOfString)
 		// return and break the loop if dataset found
 		if tsExists {
 			return tsExists
