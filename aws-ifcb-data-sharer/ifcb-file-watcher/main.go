@@ -107,7 +107,7 @@ func UploadFileToS3(awsRegion, bucketName, filePath string, dirToWatch string, u
 }
 
 // UploadFileToS3 uploads a file to an S3 bucket
-func CheckTimeSeriesExists(awsRegion, bucketName, userName string, datasetName string) bool {
+func checkTimeSeriesExists(awsRegion, bucketName, userName string, datasetName string) bool {
 	// Create a new session using the default AWS profile or environment variables
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion),
@@ -127,9 +127,8 @@ func CheckTimeSeriesExists(awsRegion, bucketName, userName string, datasetName s
 	fmt.Println(resp.CommonPrefixes)
 	fmt.Println("Found", len(resp.Contents), "items in bucket", bucketName)
 
-	for index, value := range resp.CommonPrefixes {
+	for _, value := range resp.CommonPrefixes {
 		fmt.Println("dataset:", datasetName)
-		fmt.Println("Index:", index, "Value:", aws.StringValue(value.Prefix))
 		tsExists := strings.Contains(aws.StringValue(value.Prefix), datasetName)
 		fmt.Println("TS exists:", tsExists)
 		arrayOfString := strings.Split(aws.StringValue(value.Prefix), "/")
@@ -167,23 +166,59 @@ func askForConfirmation(s string) bool {
 	}
 }
 
+// UploadFileToS3 uploads a file to an S3 bucket
+func getDataSeriesList(awsRegion, bucketName, userName string) string {
+	// Create a new session using the default AWS profile or environment variables
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(awsRegion),
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// Create S3 service client
+	svc := s3.New(sess)
+
+	resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(bucketName), Prefix: aws.String(userName + "/"), Delimiter: aws.String("/")})
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(resp.CommonPrefixes)
+	fmt.Println("Found", len(resp.Contents), "items in bucket", bucketName)
+
+	var datasetsSlice []string
+
+	for _, value := range resp.CommonPrefixes {
+		arrayOfString := strings.Split(aws.StringValue(value.Prefix), "/")
+		fmt.Println("Array:", arrayOfString)
+		fmt.Println(arrayOfString[1])
+		datasetsSlice = append(datasetsSlice, arrayOfString[1])
+
+	}
+	datasetString := strings.Join(datasetsSlice, " ")
+	fmt.Println(datasetString)
+	return datasetString
+}
+
 func main() {
 	// set optional sync-only flag
 	syncOnly := flag.Bool("sync-only", false, "One time operation to only run the Sync operation on existing files")
 	// set optional check for existing times series name
 	checkTimeSeries := flag.Bool("check-time-series", false, "Whether to run a confirmation check on time series name")
+	// return a list of existing time series
+	listTimeSeries := flag.Bool("list", false, "List existing time series for this user")
 	flag.Parse()
 
-	if flag.NArg() < 2 {
-		fmt.Println("Usage: ifcb-file-watcher <directory_to_watch> <dataset_name>")
-		os.Exit(1)
-	}
+	/*
+		if flag.NArg() < 2 {
+			fmt.Println("Usage: ifcb-file-watcher <directory_to_watch> <dataset_name>")
+			os.Exit(1)
+		}
+	*/
+
 	awsRegion := "us-east-1"               // Replace with your AWS region
 	bucketName := "ifcb-data-sharer.files" // Replace with your S3 bucket name
-
-	dirToWatch := flag.Arg(0)
-	fullDatasetName := flag.Arg(1)
-	datasetName := removeSpecialCharacters(fullDatasetName)
 
 	// load .env file
 	err := godotenv.Load(".env")
@@ -197,15 +232,33 @@ func main() {
 		os.Exit(1)
 	}
 
+	// handle list function, return results and exit
+	if *listTimeSeries {
+		res := getDataSeriesList(awsRegion, bucketName, userName)
+		fmt.Println("List response", res)
+		os.Exit(0)
+	}
+
+	dirToWatch := flag.Arg(0)
+	fullDatasetName := flag.Arg(1)
+	datasetName := removeSpecialCharacters(fullDatasetName)
+
 	// optional check if times series exists
 	if *checkTimeSeries {
-		res := CheckTimeSeriesExists(awsRegion, bucketName, userName, datasetName)
+		// returns true is time series exists
+		res := checkTimeSeriesExists(awsRegion, bucketName, userName, datasetName)
 		fmt.Println("Check response", res)
 
-		confirm := askForConfirmation("This time series already exists in your account. Please confirm that you want to use an existing account.")
-		if !confirm {
-			fmt.Println("Request canceled.")
-			return
+		// if this time series already exists, confirm that user want to continue
+		if res {
+			confirm := askForConfirmation("This time series already exists in your account. Please confirm that you want to use an existing account.")
+			if confirm {
+				fmt.Println("Request confirmed.")
+				os.Exit(0)
+			} else {
+				fmt.Println("Request canceled.")
+				os.Exit(1)
+			}
 		}
 	}
 

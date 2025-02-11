@@ -46,6 +46,10 @@ The `ifcb-sync` script main commands:
 
 - Stops running processes associated with the target directory or time series. You only need to supply one of the options.
 
+### ifcb-sync list
+
+- List all the existing Time Series in your account.
+
 Optional "Sync Only" mode
 
 ### ifcb-sync sync <target_directory> <target_time_series>
