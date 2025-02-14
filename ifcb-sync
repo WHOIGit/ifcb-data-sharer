@@ -57,14 +57,14 @@ start() {
     fi
 
     # Initial check to see if Time Series already exists or not
-    ./ifcb-file-watcher-macos -check-time-series  "$target_dir" "$target_time_series"
+    ./ifcb-file-watcher -check-time-series  "$target_dir" "$target_time_series"
     exit_status=$?
 
     if [ $exit_status -eq 0 ]; then
 	    echo "Confirmed to go"
         # Run the Go executable as a nohup process
         # nohup ./ifcb-file-watcher "$target_dir" "$target_time_series" > /dev/null 2>&1 &
-        nohup ./ifcb-file-watcher-macos "$target_dir" "$target_time_series" > ifcb-file-watcher.log 2>&1 &
+        nohup ./ifcb-file-watcher "$target_dir" "$target_time_series" > ifcb-file-watcher.log 2>&1 &
         # Get the PID of the last background process
         local pid=$!
 
@@ -128,7 +128,7 @@ sync() {
 list() {
     local target_dir=$1
     local target_time_series=$2
-    ./ifcb-file-watcher-macos -list
+    ./ifcb-file-watcher -list
     exit_status=$?
 }
 
