@@ -6,7 +6,7 @@ LOG_FILE="process.log"
 # Function to display help and usage information
 usage() {
     cat <<EOF
-Usage: $0 {start|stop|sync} [OPTIONS]
+Usage: $0 {start|stop|sync|list} [OPTIONS]
 
 Commands:
   start <target_directory> <target_time_series>
@@ -17,6 +17,9 @@ Commands:
 
   sync <target_directory> <target_time_series>
       One-time operation to upload or sync an existing group of data files to a time series.
+
+  list
+      List all existing Time Series for your account.
 
 Options:
   -h, --help
@@ -34,6 +37,10 @@ Examples:
 
   $0 sync /path/to/dir timeseries1
       One-time operation to upload or sync an existing group of data files.
+
+  $0 list
+      List all existing Time Series for your account.
+
 EOF
 }
 
@@ -121,11 +128,8 @@ sync() {
 list() {
     local target_dir=$1
     local target_time_series=$2
-
-   ./ifcb-file-watcher-macos -list
+    ./ifcb-file-watcher-macos -list
     exit_status=$?
-    
-    echo "List of existing Time Series"
 }
 
 # Main script logic

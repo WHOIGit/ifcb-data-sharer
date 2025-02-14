@@ -124,8 +124,8 @@ func checkTimeSeriesExists(awsRegion, bucketName, userName string, datasetName s
 		fmt.Println(err)
 	}
 
-	fmt.Println(resp.CommonPrefixes)
-	fmt.Println("Found", len(resp.Contents), "items in bucket", bucketName)
+	//fmt.Println(resp.CommonPrefixes)
+	//fmt.Println("Found", len(resp.Contents), "items in bucket", bucketName)
 
 	for _, value := range resp.CommonPrefixes {
 		fmt.Println("dataset:", datasetName)
@@ -167,7 +167,7 @@ func askForConfirmation(s string) bool {
 }
 
 // UploadFileToS3 uploads a file to an S3 bucket
-func getDataSeriesList(awsRegion, bucketName, userName string) string {
+func getDataSeriesList(awsRegion, bucketName, userName string) []string {
 	// Create a new session using the default AWS profile or environment variables
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion),
@@ -184,21 +184,21 @@ func getDataSeriesList(awsRegion, bucketName, userName string) string {
 		fmt.Println(err)
 	}
 
-	fmt.Println(resp.CommonPrefixes)
-	fmt.Println("Found", len(resp.Contents), "items in bucket", bucketName)
+	//fmt.Println(resp.CommonPrefixes)
+	//fmt.Println("Found", len(resp.Contents), "items in bucket", bucketName)
 
 	var datasetsSlice []string
 
 	for _, value := range resp.CommonPrefixes {
 		arrayOfString := strings.Split(aws.StringValue(value.Prefix), "/")
-		fmt.Println("Array:", arrayOfString)
-		fmt.Println(arrayOfString[1])
+		//fmt.Println("Array:", arrayOfString)
+		//fmt.Println(arrayOfString[1])
 		datasetsSlice = append(datasetsSlice, arrayOfString[1])
 
 	}
-	datasetString := strings.Join(datasetsSlice, " ")
-	fmt.Println(datasetString)
-	return datasetString
+	//datasetString := strings.Join(datasetsSlice, " ")
+	//fmt.Println(datasetString)
+	return datasetsSlice
 }
 
 func main() {
@@ -222,10 +222,7 @@ func main() {
 
 	// load .env file
 	err := godotenv.Load(".env")
-	aws_key := os.Getenv("AWS_ACCESS_KEY_ID")
 	userName := os.Getenv("USER_ACCOUNT")
-	fmt.Println("userName", userName)
-	fmt.Println("AWS Key", aws_key)
 
 	if err != nil {
 		fmt.Println("Error loading .env file. You need to put your AWS access key/secret key in .env file")
@@ -235,7 +232,10 @@ func main() {
 	// handle list function, return results and exit
 	if *listTimeSeries {
 		res := getDataSeriesList(awsRegion, bucketName, userName)
-		fmt.Println("List response", res)
+		fmt.Println("Existing Time Series for user:", userName)
+		for _, value := range res {
+			fmt.Println(value)
+		}
 		os.Exit(0)
 	}
 
