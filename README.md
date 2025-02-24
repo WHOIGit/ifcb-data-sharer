@@ -52,7 +52,7 @@ The `ifcb-sync` script main commands:
 
 - List all the existing Time Series in your account.
 
-Optional "Sync Only" mode
+## Optional "Sync Only" mode
 
 ### ifcb-sync sync <target_directory> <target_time_series>
 
