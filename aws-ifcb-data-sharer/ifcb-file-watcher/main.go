@@ -128,11 +128,9 @@ func checkTimeSeriesExists(awsRegion, bucketName, userName string, datasetName s
 	//fmt.Println("Found", len(resp.Contents), "items in bucket", bucketName)
 
 	for _, value := range resp.CommonPrefixes {
-		fmt.Println("dataset:", datasetName)
+		//fmt.Println("dataset:", datasetName)
 		tsExists := strings.Contains(aws.StringValue(value.Prefix), datasetName)
-		fmt.Println("TS exists:", tsExists)
-		arrayOfString := strings.Split(aws.StringValue(value.Prefix), "/")
-		fmt.Println("Array:", arrayOfString)
+		//fmt.Println("TS exists:", tsExists)
 		// return and break the loop if dataset found
 		if tsExists {
 			return tsExists
@@ -247,11 +245,11 @@ func main() {
 	if *checkTimeSeries {
 		// returns true is time series exists
 		res := checkTimeSeriesExists(awsRegion, bucketName, userName, datasetName)
-		fmt.Println("Check response", res)
+		// fmt.Println("Check response", res)
 
 		// if this time series already exists, confirm that user want to continue
 		if res {
-			confirm := askForConfirmation("This time series already exists in your account. Please confirm that you want to use an existing account.")
+			confirm := askForConfirmation("This time series already exists in your account. Please confirm that you want to use an existing time series.")
 			if confirm {
 				fmt.Println("Request confirmed.")
 				os.Exit(0)
@@ -260,6 +258,8 @@ func main() {
 				os.Exit(1)
 			}
 		}
+		fmt.Println("New Time Series. Start process")
+		os.Exit(0)
 	}
 
 	watcher, err := fsnotify.NewWatcher()
@@ -362,7 +362,7 @@ func main() {
 
 	// Sync from local to s3
 	if strings.HasSuffix(dirToWatch, "/") {
-		fmt.Println("The string ends with a '/', slice it off")
+		//fmt.Println("The string ends with a '/', slice it off")
 		dirToWatch = dirToWatch[:len(dirToWatch)-1]
 	}
 
