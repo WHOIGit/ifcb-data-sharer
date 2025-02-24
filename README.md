@@ -15,7 +15,7 @@ cd /home/ifcb
 git clone https://github.com/WHOIGit/ifcb-data-sharer.git
 cd ifcb-data-sharer
 chmod +x ifcb-sync
-sudo ln -s /home/ifcb/ifcb-sync /usr/local/bin/
+sudo ln -s /home/ifcb/ifcb-data-sharer/ifcb-sync /usr/local/bin/
 ```
 
 3. Create a new `.env` file in the same directory. Copy the example code from the `.env.example`:
