@@ -7,13 +7,15 @@ Once installed and executed, the `ifcb-sync` command will continuosly monitor a 
 ## How to install on IFCB (Linux)
 
 1. Contact mbrosnahan@whoi.edu to request a user account and receive access credentials
-2. Install the `ifcb-sync` script on to your IFCB device (if Git is already installed, skip the first step):
+2. Install the `ifcb-sync` script on to your IFCB device (if Git is already installed, skip the first step. Directions assume that `/home/ifcb` is your user home directory. Replace this path if necessary.):
 
 ```
 sudo apt install git
 cd /home/ifcb
 git clone https://github.com/WHOIGit/ifcb-data-sharer.git
+cd ifcb-data-sharer
 chmod +x ifcb-sync
+sudo ln -s /home/ifcb/ifcb-sync /usr/local/bin/
 ```
 
 3. Create a new `.env` file in the same directory. Copy the example code from the `.env.example`:
