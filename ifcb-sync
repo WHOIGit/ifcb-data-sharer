@@ -44,6 +44,9 @@ Examples:
 EOF
 }
 
+# Change diretory to realpath
+cd "$(dirname "$(realpath "$0")")"
+
 # Function to start a Go executable
 start() {
     local target_dir=$1
