@@ -247,9 +247,9 @@ func main() {
 		res := checkTimeSeriesExists(awsRegion, bucketName, userName, datasetName)
 		// fmt.Println("Check response", res)
 
-		// if this time series already exists, confirm that user want to continue
-		if res {
-			confirm := askForConfirmation("This time series already exists in your account. Please confirm that you want to use an existing time series.")
+		// if this time series is new, confirm that user want to continue
+		if !res {
+			confirm := askForConfirmation("You are creating a new Time Series. Please confirm that you want to set up a new Time Series")
 			if confirm {
 				fmt.Println("Request confirmed.")
 				os.Exit(0)
@@ -258,7 +258,7 @@ func main() {
 				os.Exit(1)
 			}
 		}
-		fmt.Println("New Time Series. Start process")
+		fmt.Println("Existing Time Series. Start process")
 		os.Exit(0)
 	}
 
