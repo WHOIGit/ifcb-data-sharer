@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Get the operating system name
+OS=$(uname)
+
 # Define log file for PIDs
 LOG_FILE="process.log"
 
@@ -47,6 +50,23 @@ EOF
 # Change diretory to realpath
 cd "$(dirname "$(realpath "$0")")"
 
+# Set the executable based on the OS
+case "$OS" in
+    "Linux")
+        EXECUTABLE="./ifcb-file-watcher"
+        ;;
+    "Darwin")
+        EXECUTABLE="./ifcb-file-watcher-macos"
+        ;;
+    "CYGWIN"*|"MINGW"*|"MSYS"*)
+        EXECUTABLE="./ifcb-file-watcher-windows"
+        ;;
+    *)
+        echo "Unsupported OS: $OS"
+        exit 1
+        ;;
+esac
+
 # Function to start a Go executable
 start() {
     local target_dir=$1
@@ -60,14 +80,14 @@ start() {
     fi
 
     # Initial check to see if Time Series already exists or not
-    ./ifcb-file-watcher -check-time-series  "$target_dir" "$target_time_series"
+    ./$EXECUTABLE -check-time-series  "$target_dir" "$target_time_series"
     exit_status=$?
 
     if [ $exit_status -eq 0 ]; then
 	    echo "Confirmed to go"
         # Run the Go executable as a nohup process
-        # nohup ./ifcb-file-watcher "$target_dir" "$target_time_series" > /dev/null 2>&1 &
-        nohup ./ifcb-file-watcher "$target_dir" "$target_time_series" > ifcb-file-watcher.log 2>&1 &
+        # nohup $EXECUTABLE "$target_dir" "$target_time_series" > /dev/null 2>&1 &
+        nohup $EXECUTABLE "$target_dir" "$target_time_series" > ifcb-file-watcher.log 2>&1 &
         # Get the PID of the last background process
         local pid=$!
 
@@ -122,7 +142,7 @@ sync() {
     fi
 
     # Run the Go executable to sync
-    ./ifcb-file-watcher -sync-only "$target_dir" "$target_time_series" > ifcb-file-watcher.log 2>&1 &
+    ./$EXECUTABLE -sync-only "$target_dir" "$target_time_series" > ifcb-file-watcher.log 2>&1 &
 
     echo "Sync complete for target directory '$target_dir' and time series '$target_time_series'"
 }
@@ -131,7 +151,7 @@ sync() {
 list() {
     local target_dir=$1
     local target_time_series=$2
-    ./ifcb-file-watcher -list
+    ./$EXECUTABLE -list
     exit_status=$?
 }
 
