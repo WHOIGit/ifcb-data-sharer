@@ -4,13 +4,27 @@ The IFCB Data Sharer allows multiple end users to share their IFCB data to the W
 
 Once installed and executed, the `ifcb-sync` command will continuosly monitor a specified data directory on the IFCB device. Any new files created by the IFCB will by automatically uploaded to an AWS data pipeline that will save them to habon-ifcb.whoi.edu
 
-## How to install on IFCB (Linux)
+## How to install on IFCB
 
 1. Contact mbrosnahan@whoi.edu to request a user account and receive access credentials
-2. Install the `ifcb-sync` script on to your IFCB device (if Git is already installed, skip the first step. Directions assume that `/home/ifcb` is your user home directory. Replace this path if necessary.):
+2. Ensure that Git is installed.   
 
+#### Linux
+In a terminal:
 ```
 sudo apt install git
+```
+#### MacOS
+Download and install Xcode through the [Mac App store](https://apps.apple.com/us/app/xcode)
+
+#### Windows
+Download and install [Git for Windows](https://git-scm.com/download/win). During installation, be sure to enable symbolic links.
+
+3. Install the `ifcb-sync` script.
+
+#### IFCB host
+In a terminal:
+```
 cd /home/ifcb
 git clone https://github.com/WHOIGit/ifcb-data-sharer.git
 cd ifcb-data-sharer
@@ -18,13 +32,38 @@ chmod +x ifcb-sync
 sudo ln -s /home/ifcb/ifcb-data-sharer/ifcb-sync /usr/local/bin/
 ```
 
-3. Create a new `.env` file in the same directory. Copy the example code from the `.env.example`:
+#### Linux or MacOS server
+In a terminal:
+```
+INSTALLDIR=$(pwd)
+git clone https://github.com/WHOIGit/ifcb-data-sharer.git
+cd ifcb-data-sharer
+chmod +x ifcb-sync
+sudo ln -s "$INSTALLDIR/ifcb-sync" /usr/local/bin/
+```
+
+#### Windows server
+Open a Git Bash terminal 'as an Administrator' - right click icon in start menu > 'More' > 'Run as administrator'. In terminal:
+```
+git clone https://github.com/WHOIGit/ifcb-data-sharer.git
+cd ifcb-data-sharer
+chmod +x ifcb-sync
+mkdir -p /usr/local/bin
+```
+Create a Windows symlink for ifcb-sync. Open cmd.exe. In new cmd terminal:
+```
+cd C:\Program Files\Git\usr\local\bin
+mklink ifcb-sync C:\path\to\ifcb-data-sharer\ifcb-sync
+```
+where `C:\path\to\ifcb-data-sharer` is the location where this repo was cloned. Default is `C:\Users\USERNAME\ifcb-data-sharer`. 
+
+4. Create a new `.env` file in the same directory. In a terminal, copy the example code from the `.env.example`. Use Git Bash terminal if installing on a Windows host.
 
 ```
 cp .env.example .env
 ```
 
-4. Update the .env variables to the AWS Key/AWS Secret/User Account that you received from WHOI.
+5. Update the .env variables to the AWS Key/AWS Secret/User Account that you received from WHOI using a text editor (e.g., `nano .env`).
 
 ```
 AWS_ACCESS_KEY_ID=your-key-here
