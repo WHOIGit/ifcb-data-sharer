@@ -1,8 +1,6 @@
 # IFCB Data Sharer
 
-The IFCB Data Sharer allows multiple end users to share their IFCB data to the WHOI HABON IFCB dashboard using an automated Linux script.
-
-Once installed and executed, the `ifcb-sync` command will continuosly monitor a specified data directory on the IFCB device. Any new files created by the IFCB will by automatically uploaded to an AWS data pipeline that will save them to habon-ifcb.whoi.edu
+IFCB Data Sharer allows Imaging FlowCytobot ([IFCB](https://mclanelabs.com/imaging-flowcytobot/)) operator groups to share their data through an [IFCB dashboard](https://github.com/WHOIGit/ifcbdb.git) hosted at the Woods Hole Oceanographic Institution (https://habon-ifcb.whoi.edu). Depending on how it's invoked, the program either performs a one-time file synchronization or continuosly monitors a specified data directory (e.g., an IFCB or a Linux, Mac, or Windows OS server), uploading any new files created within it to habon-ifcb.whoi.edu via an AWS data pipeline.
 
 ## How to install on IFCB
 
