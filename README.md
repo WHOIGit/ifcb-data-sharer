@@ -89,7 +89,7 @@ The `ifcb-sync` script main commands:
 
 - List all the existing Time Series in your account.
 
-## Optional "Sync Only" mode
+## One-time sync option
 
 ### ifcb-sync sync <target_directory> <target_time_series>
 
@@ -97,4 +97,4 @@ If you just need to upload or sync an existing group of data files in a director
 
 ### Notes on data syncing
 
-The data sync is a one-way sync from your IFCB device to WHOI's cloud storage. IF you add new files to the IFCB that are not currently present in the cloud or update existing files, then those files will be uploaded and synced. However, if you delete files from the IFCB device, this WILL NOT delete those files from the cloud.
+The data sync is a one-way sync from your IFCB device to WHOI's cloud storage. Files in the target directory that are not already present in the cloud will be uploaded and synced. However, if files are removed or deleted from the target directory, these chagnes are not propgated to the time series on https://habon-ifcb.whoi.edu. Updates to the published time series need to be made through log into the IFCB dashboard website.
