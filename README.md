@@ -1,20 +1,18 @@
 # IFCB Data Sharer
 
-The IFCB Data Sharer allows multiple end users to share their IFCB data to the WHOI HABON IFCB dashboard using an automated Linux script.
+IFCB Data Sharer allows Imaging FlowCytobot ([IFCB](https://mclanelabs.com/imaging-flowcytobot/)) operator groups to share their data through an [IFCB dashboard](https://github.com/WHOIGit/ifcbdb.git) hosted at the Woods Hole Oceanographic Institution (https://habon-ifcb.whoi.edu). Depending on how it's invoked, the program either performs a one-time file synchronization or continuosly monitors a specified data directory (e.g., on either an IFCB or a Linux, Mac, or Windows OS server), uploading any new files created within the directory to habon-ifcb.whoi.edu via an AWS data pipeline.
 
-Once installed and executed, the `ifcb-sync` command will continuosly monitor a specified data directory on the IFCB device. Any new files created by the IFCB will by automatically uploaded to an AWS data pipeline that will save them to habon-ifcb.whoi.edu
-
-## How to install on IFCB
+## Installation procedure
 
 1. Contact mbrosnahan@whoi.edu to request a user account and receive access credentials
-2. Ensure that Git is installed.   
+2. Ensure that Git is installed on your host.   
 
 #### Linux
 In a terminal:
 ```
 sudo apt install git
 ```
-#### MacOS
+#### Mac
 Download and install Xcode through the [Mac App store](https://apps.apple.com/us/app/xcode)
 
 #### Windows
@@ -91,7 +89,7 @@ The `ifcb-sync` script main commands:
 
 - List all the existing Time Series in your account.
 
-## Optional "Sync Only" mode
+## One-time sync option
 
 ### ifcb-sync sync <target_directory> <target_time_series>
 
@@ -99,4 +97,4 @@ If you just need to upload or sync an existing group of data files in a director
 
 ### Notes on data syncing
 
-The data sync is a one-way sync from your IFCB device to WHOI's cloud storage. IF you add new files to the IFCB that are not currently present in the cloud or update existing files, then those files will be uploaded and synced. However, if you delete files from the IFCB device, this WILL NOT delete those files from the cloud.
+The data sync is a one-way sync from your IFCB device to WHOI's cloud storage. Files in the target directory that are not already present in the cloud will be uploaded and synced. However, if files are removed or deleted from the target directory, these chagnes are not propgated to the time series on https://habon-ifcb.whoi.edu. Updates to the published time series need to be made through log into the IFCB dashboard website.
