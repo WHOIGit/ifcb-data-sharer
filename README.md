@@ -1,18 +1,18 @@
 # IFCB Data Sharer
 
-IFCB Data Sharer allows Imaging FlowCytobot ([IFCB](https://mclanelabs.com/imaging-flowcytobot/)) operator groups to share their data through an [IFCB dashboard](https://github.com/WHOIGit/ifcbdb.git) hosted at the Woods Hole Oceanographic Institution (https://habon-ifcb.whoi.edu). Depending on how it's invoked, the program either performs a one-time file synchronization or continuosly monitors a specified data directory (e.g., an IFCB or a Linux, Mac, or Windows OS server), uploading any new files created within it to habon-ifcb.whoi.edu via an AWS data pipeline.
+IFCB Data Sharer allows Imaging FlowCytobot ([IFCB](https://mclanelabs.com/imaging-flowcytobot/)) operator groups to share their data through an [IFCB dashboard](https://github.com/WHOIGit/ifcbdb.git) hosted at the Woods Hole Oceanographic Institution (https://habon-ifcb.whoi.edu). Depending on how it's invoked, the program either performs a one-time file synchronization or continuosly monitors a specified data directory (e.g., on either an IFCB or a Linux, Mac, or Windows OS server), uploading any new files created within the directory to habon-ifcb.whoi.edu via an AWS data pipeline.
 
-## How to install on IFCB
+## Installation procedure
 
 1. Contact mbrosnahan@whoi.edu to request a user account and receive access credentials
-2. Ensure that Git is installed.   
+2. Ensure that Git is installed on your host.   
 
 #### Linux
 In a terminal:
 ```
 sudo apt install git
 ```
-#### MacOS
+#### Mac
 Download and install Xcode through the [Mac App store](https://apps.apple.com/us/app/xcode)
 
 #### Windows
