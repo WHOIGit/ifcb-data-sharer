@@ -48,7 +48,7 @@ cd ifcb-data-sharer
 chmod +x ifcb-sync
 mkdir -p /usr/local/bin
 ```
-Create a Windows symlink for ifcb-sync. Open cmd.exe. In new cmd terminal:
+Create a Windows symlink for ifcb-sync. Open and run cmd.exe as an administrator. In new cmd terminal:
 ```
 cd C:\Program Files\Git\usr\local\bin
 mklink ifcb-sync C:\path\to\ifcb-data-sharer\ifcb-sync
@@ -79,7 +79,7 @@ The `ifcb-sync` script main commands:
 
 - <target_directory> - This is the absolute or relative path to the root of the data directory for the IFCB files: ex. `/home/ifcb/ifcbdata`
 
-- <target_time_series> - The name of the time series you want to add these files to on the IFCB Dashboard: `my-dataset`
+- <target_time_series> - The name of the time series you want to add these files to on the IFCB Dashboard: `my-dataset`. The name should not include spaces and must be less than 54 characters long.
 
 ### ifcb-sync stop <target_directory|target_time_series>
 
