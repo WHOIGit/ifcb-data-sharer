@@ -4,7 +4,7 @@ IFCB Data Sharer allows Imaging FlowCytobot ([IFCB](https://mclanelabs.com/imagi
 
 ## Installation procedure
 
-1. Contact mbrosnahan@whoi.edu to request a user account and receive access credentials
+1. Contact mbrosnahan@whoi.edu to request an account and receive access credentials
 2. Ensure that Git is installed on your host.   
 
 #### Linux
@@ -79,7 +79,7 @@ The `ifcb-sync` script main commands:
 
 - <target_directory> - This is the absolute or relative path to the root of the data directory for the IFCB files: ex. `/home/ifcb/ifcbdata`
 
-- <target_time_series> - The name of the time series you want to add these files to on the IFCB Dashboard: `my-dataset`. The name should not include spaces and must be less than 54 characters long.
+- <target_time_series> - The name of the time series you want to add these files to on the IFCB Dashboard: `my-dataset`. The time series name is used to generate a url at https://habon-whoi.edu/<account_name>_<target_time_series>. The name you choose should not include spaces and <account_name>_<target_time_series> must be less than 64 characters long.
 
 ### ifcb-sync stop <target_directory|target_time_series>
 
