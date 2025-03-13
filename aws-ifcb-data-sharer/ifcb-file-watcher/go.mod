@@ -1,6 +1,7 @@
 module ifcb-file-watcher
 
 go 1.22.4
+toolchain go1.23.7
 
 require (
 	github.com/aws/aws-sdk-go v1.55.6
@@ -12,6 +13,6 @@ require (
 require (
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	golang.org/x/net v0.34.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 )
