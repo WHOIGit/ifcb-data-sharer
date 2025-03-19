@@ -89,11 +89,26 @@ The `ifcb-sync` script main commands:
 
 - List all the existing Time Series in your account.
 
+## Live data sharing example:
+
+A member of group `hablab` deploys an IFCB and wants to publish its images through time series `nauset`. Their data are written to directory `/home/ifcb/ifcbdata/nauset_data` on their IFCB. They would start live data sharing through http://habon-ifcb.whoi.edu using command:
+```
+ifcb-sync /home/ifcb/ifcbdata/nauset_data nauset
+```
+Images will be transferred through AWS and published at https://habon-ifcb.whoi.edu/hablab_nauset as sample data are written on the IFCB.
+
+Before the instrument is taken offline or used for creation of another dataset, they should stop `ifcb-sync` using command:
+```
+ifcb-sync stop nauset
+```
+Failure to stop `ifcb-sync` may cause future IFCB samples to be mistakenly added to the `nauset` time series.
+
 ## One-time sync option
 
 ### ifcb-sync sync <target_directory> <target_time_series>
 
 If you just need to upload or sync an existing group of data files in a directory, you can run the script in "sync-only" mode. This operation will end the program after the sync is complete. It will not monitor the directory for new files.
+
 
 ### Notes on data syncing
 
