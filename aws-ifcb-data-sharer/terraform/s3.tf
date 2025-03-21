@@ -35,7 +35,7 @@ module "s3_notification" {
     lambda1 = {
       function_arn  = module.lambda_function.lambda_function_arn
       function_name = module.lambda_function.lambda_function_name
-      events        = ["s3:ObjectCreated:*"]
+      events        = ["s3:ObjectCreated:Put", "s3:ObjectCreated:Post"]
       //filter_prefix = "data/"
       //filter_suffix = ".h5"
     }

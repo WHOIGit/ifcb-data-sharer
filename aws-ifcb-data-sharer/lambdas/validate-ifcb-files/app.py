@@ -2,6 +2,7 @@ import json
 import boto3
 import os
 import magic
+import re
 from pathlib import Path
 
 # import IFCB utilities from https://github.com/joefutrelle/pyifcb package
@@ -11,6 +12,19 @@ from ifcb.data.identifiers import parse
 
 s3_client = boto3.client("s3")
 valid_extensions = [".adc", ".hdr", ".roi", ".csv"]
+
+
+def extract_year_month_and_prefix(filename):
+    # Regular expression to match the date and extract year, month, and prefix
+    match = re.search(r"D(\d{4})(\d{2})\d{2}T", filename)
+
+    if match:
+        year = int(match.group(1))
+        # month = int(match.group(2))
+        prefix = filename.split("T")[0]
+        return year, prefix
+    else:
+        raise ValueError("Invalid filename format")
 
 
 def lambda_handler(event, context):
@@ -44,6 +58,7 @@ def lambda_handler(event, context):
         valid_file = False
         bin_pid = Path(s3_File_Name).stem
         tmp_file = f"/tmp/{bin_pid}{file_extension}"
+
         print("tmp_file", tmp_file)
         result = s3_client.download_file(s3_Bucket_Name, s3_File_Name, tmp_file)
 
@@ -114,6 +129,27 @@ def lambda_handler(event, context):
         return None
 
     if valid_file:
+        # move file to valid file directory structure
+        year, prefix = extract_year_month_and_prefix(bin_pid)
+
+        destination_key = (
+            f"{username}/{dataset}/{year}/{prefix}/{bin_pid}{file_extension}"
+        )
+        print("Destination key check:")
+        print(destination_key, s3_File_Name)
+
+        if destination_key != s3_File_Name:
+            # Copy the object if it's in wrong place
+            s3_client.copy_object(
+                Bucket=s3_Bucket_Name,
+                CopySource={"Bucket": s3_Bucket_Name, "Key": s3_File_Name},
+                Key=destination_key,
+            )
+
+            # Delete the original object
+            s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
+            print(f"Moved {s3_File_Name} to {destination_key}")
+
         # save status to Dynamo
         dynamodb = boto3.resource("dynamodb")
         table_name = "ifcb-data-sharer-bins"

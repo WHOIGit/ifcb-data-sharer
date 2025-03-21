@@ -15,7 +15,7 @@ module "docker_image" {
   ecr_repo        = "validate-ifcb-files-lambda"
 
   use_image_tag = true
-  image_tag     = "1.18"
+  image_tag     = "1.20"
 
   source_path = "${path.module}/../lambdas/validate-ifcb-files"
 
@@ -59,7 +59,7 @@ module "lambda_function" {
   policy_statements = {
     GetS3Objects = {
       effect  = "Allow",
-      actions = ["s3:GetObject", "s3:DeleteObject"],
+      actions = ["s3:GetObject", "s3:DeleteObject", "s3:CopyObject", "s3:PutObject"],
       resources = [
         "${module.s3_bucket.s3_bucket_arn}",
         "${module.s3_bucket.s3_bucket_arn}/*"
