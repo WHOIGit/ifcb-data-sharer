@@ -93,7 +93,7 @@ The `ifcb-sync` script main commands:
 
 A member of group `hablab` deploys an IFCB and wants to publish its images through time series `nauset`. Their data are written to directory `/home/ifcb/ifcbdata/nauset_data` on their IFCB. They would start live data sharing through http://habon-ifcb.whoi.edu using command:
 ```
-ifcb-sync /home/ifcb/ifcbdata/nauset_data nauset
+ifcb-sync start /home/ifcb/ifcbdata/nauset_data nauset
 ```
 Images will be transferred through AWS and published at https://habon-ifcb.whoi.edu/hablab_nauset as sample data are written on the IFCB.
 
@@ -112,4 +112,4 @@ If you just need to upload or sync an existing group of data files in a director
 
 ### Notes on data syncing
 
-The data sync is a one-way sync from your IFCB device to WHOI's cloud storage. Files in the target directory that are not already present in the cloud will be uploaded and synced. However, if files are removed or deleted from the target directory, these chagnes are not propgated to the time series on https://habon-ifcb.whoi.edu. Updates to the published time series need to be made through log into the IFCB dashboard website.
+The data sync is a one-way sync from your IFCB device to WHOI's cloud storage. Files in the target directory **and its subdirectories** not already present in the cloud will be uploaded and synced to the specified time-series. However, if files are removed or deleted from the target directory on your local machine, these chagnes are not propgated to the time series on https://habon-ifcb.whoi.edu. Updates to the published time series need to be made through log into the IFCB dashboard website.
