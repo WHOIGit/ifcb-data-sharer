@@ -6,11 +6,14 @@ LOCK_DIR="locks"
 
 usage() {
     cat <<EOF
-Usage: $0 {start|stop|sync|list} [OPTIONS]
+Usage: $0 {start|status|stop|sync|list} [OPTIONS]
 
 Commands:
   start <target_directory> <target_time_series> [--restart]
       Start the Go executable as a background process. Use --restart to stop any existing instance.
+
+  status
+      List existing ifcb-file-watcher jobs
 
   stop <target_directory|target_time_series>
       Stop running processes associated with the target directory or time series.
@@ -122,6 +125,25 @@ start() {
     fi
 }
 
+status() {
+    echo "Listing ifcb-file-watcher instances..."
+    if [[ ! -f "$LOG_FILE" ]]; then
+        echo "No running instances found."
+        return
+    fi
+
+    printf "%-8s %-10s %-40s %-20s\n" "PID" "STATUS" "DIRECTORY" "TIME_SERIES"
+    echo "--------------------------------------------------------------------------------------------"
+
+    while IFS=' ' read -r pid dir ts; do
+        if is_running "$pid"; then
+            printf "%-8s %-10s %-40s %-20s\n" "$pid" "Running" "$dir" "$ts"
+        else
+            printf "%-8s %-10s %-40s %-20s\n" "$pid" "Stale" "$dir" "$ts"
+        fi
+    done < "$LOG_FILE"
+}
+
 stop() {
     local target=$1
     if [[ -z "$target" ]]; then
@@ -171,6 +193,10 @@ case $1 in
     start)
         shift
         start "$@"
+        ;;
+    status)
+        shift
+        status
         ;;
     stop)
         shift
