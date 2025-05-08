@@ -85,6 +85,10 @@ start() {
                 if [[ "$restart_flag" == "--restart" ]]; then
                     echo "Restarting job: killing PID $existing_pid"
                     kill "$existing_pid" 2>/dev/null
+                    # Remove previous PID from process.log
+                    tmpfile=$(mktemp "$LOG_FILE.XXXXXX")
+                    grep -v "^$existing_pid " "$LOG_FILE" > "$tmpfile"
+                    mv "$tmpfile" "$LOG_FILE"
                     rm -rf "$lock_path"
                 else
                     echo "Job already running with PID $existing_pid. Use --restart to replace it."
