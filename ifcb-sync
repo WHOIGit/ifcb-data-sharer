@@ -169,7 +169,7 @@ stop() {
     done < "$LOG_FILE"
 
     local tmpfile=$(mktemp "$LOG_FILE.XXXXXX")
-    echo "$updated_log" > "$tmpfile"
+    echo -n "$updated_log" > "$tmpfile"
     mv "$tmpfile" "$LOG_FILE"
 }
 
