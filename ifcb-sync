@@ -4,6 +4,11 @@ OS=$(uname)
 LOG_FILE="process.log"
 LOCK_DIR="locks"
 
+# Load groupname from .env if it exists
+if [ -f .env ]; then
+    GROUPNAME=$(grep '^USER_ACCOUNT=' .env | cut -d '=' -f2)
+fi
+
 usage() {
     cat <<EOF
 Usage: $0 {start|status|stop|sync|list} [OPTIONS]
@@ -69,6 +74,22 @@ hash_job() {
 start() {
     local target_dir=$1
     local target_time_series=$2
+    # Check for invalid groupname prefix
+    if [[ "$target_time_series" == "${GROUPNAME}"* ]]; then
+        # Remove $GROUPNAME prefix with optional '_' or '-' after it
+        cleaned_ts="${target_time_series#${GROUPNAME}[-_]}"
+        cleaned_ts="${cleaned_ts#${GROUPNAME}}"  # In case no separator
+        echo "ERROR: Time series name cannot begin with groupid ('${GROUPNAME}'). Consider using '$cleaned_ts' rather than '$target_time_series'."
+        exit 1
+    fi
+
+    # Enforce max length of 64 characters for GROUPNAME_cleaned_ts
+    combined_name="${GROUPNAME}_${target_time_series}"
+    if (( ${#combined_name} > 64 )); then
+        echo "ERROR: Time series name exceeds the 64-character limit after addition of groupid ('${combined_name}': ${#combined_name} chars)."
+        exit 1
+    fi
+
     local restart_flag=$3
 
     if [[ -z "$target_dir" || -z "$target_time_series" ]]; then
@@ -176,6 +197,21 @@ stop() {
 sync() {
     local target_dir=$1
     local target_time_series=$2
+    # Check for invalid groupname_ prefix
+    if [[ "$target_time_series" == "${GROUPNAME}_"* ]]; then
+        cleaned_ts="${target_time_series#${GROUPNAME}[-_]}"
+        cleaned_ts="${cleaned_ts#${GROUPNAME}}"  # In case no separator
+        echo "ERROR: Time series name cannot begin with groupid ('${GROUPNAME}'). Consider using '$cleaned_ts' rather than '$target_time_series'."
+        exit 1
+    fi
+
+    # Enforce max length of 64 characters for GROUPNAME_cleaned_ts
+    combined_name="${GROUPNAME}_${target_time_series}"
+    if (( ${#combined_name} > 64 )); then
+        echo "ERROR: Time series name exceeds the 64-character limit after addition of groupid ('${combined_name}': ${#combined_name} chars)."
+        exit 1
+    fi
+
     if [[ -z "$target_dir" || -z "$target_time_series" ]]; then
         echo "Error: Missing required inputs for 'sync'."
         usage
