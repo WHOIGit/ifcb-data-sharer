@@ -135,10 +135,12 @@ def lambda_handler(event, context):
         destination_key = (
             f"{username}/{dataset}/{year}/{prefix}/{bin_pid}{file_extension}"
         )
+
+        destination_key_2 = f"{username}/{dataset}/{bin_pid}{file_extension}"
         print("Destination key check:")
         print(destination_key, s3_File_Name)
 
-        if destination_key != s3_File_Name:
+        if destination_key != s3_File_Name and destination_key_2 != s3_File_Name:
             # Copy the object if it's in wrong place
             s3_client.copy_object(
                 Bucket=s3_Bucket_Name,
