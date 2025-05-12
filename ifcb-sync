@@ -14,8 +14,9 @@ usage() {
 Usage: $0 {start|status|stop|sync|list} [OPTIONS]
 
 Commands:
-  start <target_directory> <target_time_series> [--restart]
-      Start the Go executable as a background process. Use --restart to stop any existing instance.
+  start <target_directory> <target_time_series> [--restart] [--force]
+      Start the Go executable as a background process. Use --restart to stop any existing instance. 
+      Use --force to skip the confirmation check for a new target series.
 
   status
       List existing ifcb-file-watcher jobs
@@ -35,6 +36,9 @@ Options:
 
   --restart
       Stop any existing instance of the job before starting a new one (used with 'start').
+
+  --force
+      Skip the confirmation check for creating a new time series (used with 'start').
 EOF
 }
 
@@ -74,6 +78,22 @@ hash_job() {
 start() {
     local target_dir=$1
     local target_time_series=$2
+    local force_enabled=false
+    local start_job=false
+
+    # Check for --force flag
+    for arg in "$@"; do
+        case $arg in
+            --force)
+            force_enabled=true
+            shift
+            ;;
+            *)
+            # unknown option
+            ;;
+        esac
+    done
+
     # Check for invalid groupname prefix
     if [[ "$target_time_series" == "${GROUPNAME}"* ]]; then
         # Remove $GROUPNAME prefix with optional '_' or '-' after it
@@ -131,8 +151,18 @@ start() {
     mkdir "$lock_path"
     echo $$ > "$lock_path/pid"
 
-    ./$EXECUTABLE -check-time-series "$target_dir" "$target_time_series"
-    if [[ $? -eq 0 ]]; then
+     # if --force flag present, stop the confirmation check routine
+    if [ "$force_enabled" == true ]; then
+        start_job=true
+    else
+        ./$EXECUTABLE -check-time-series "$target_dir" "$target_time_series"
+        if [[ $? -eq 0 ]]; then
+            start_job=true
+        fi
+    fi
+
+    
+    if [[ "$start_job" == true  ]]; then
         nohup $EXECUTABLE "$target_dir" "$target_time_series" > "ifcb-file-watcher-$job_id.log" 2>&1 &
         local pid=$!
         local tmpfile=$(mktemp "$LOG_FILE.XXXXXX")
