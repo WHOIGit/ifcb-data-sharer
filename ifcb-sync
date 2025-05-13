@@ -4,6 +4,8 @@ OS=$(uname)
 LOG_FILE="process.log"
 LOCK_DIR="locks"
 
+cd "$(dirname "$(realpath "$0")")"
+
 # Load groupname from .env if it exists
 if [ -f .env ]; then
     GROUPNAME=$(grep '^USER_ACCOUNT=' .env | cut -d '=' -f2)
@@ -41,8 +43,6 @@ Options:
       Skip the confirmation check for creating a new time series (used with 'start').
 EOF
 }
-
-cd "$(dirname "$(realpath "$0")")"
 
 case "$OS" in
     "Linux") 
