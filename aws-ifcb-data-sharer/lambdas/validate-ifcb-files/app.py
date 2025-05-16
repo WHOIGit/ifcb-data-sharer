@@ -4,6 +4,7 @@ import os
 import magic
 import re
 from pathlib import Path
+from botocore.exceptions import ClientError
 
 # import IFCB utilities from https://github.com/joefutrelle/pyifcb package
 from ifcb.data.adc import AdcFile
@@ -40,6 +41,7 @@ def lambda_handler(event, context):
         s3_Root, file_extension = os.path.splitext(s3_File_Name)
         username = s3_Root.split("/")[0]
         dataset = s3_Root.split("/")[1]
+
         print("file_extension", file_extension, username, dataset)
         print("user", username)
         print("dataset", dataset)
@@ -53,13 +55,33 @@ def lambda_handler(event, context):
                 "body": json.dumps(f"{s3_File_Name} not valid file type. Deleted"),
             }
 
-        # download file to tmp directory to test file contents
+        # check if file already exists in final location, if not then
+        # download file to tmp directory to test file contents.
         # get the Bin pid, pyifcb needs correct file name to parse
         valid_file = False
         bin_pid = Path(s3_File_Name).stem
         tmp_file = f"/tmp/{bin_pid}{file_extension}"
+        year, prefix = extract_year_month_and_prefix(bin_pid)
+        destination_key = (
+            f"{username}/{dataset}/{year}/{prefix}/{bin_pid}{file_extension}"
+        )
 
-        print("tmp_file", tmp_file)
+        try:
+            s3_client.head_object(Bucket=s3_Bucket_Name, Key=destination_key)
+            print("File already exists, delete new version")
+            s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
+            return {
+                "statusCode": 200,
+                "body": json.dumps(f"{s3_File_Name} already exists. Deleted"),
+            }
+        except ClientError as e:
+            # no existing file, continue parsing
+            if e.response["Error"]["Code"] == "404":
+                pass
+            else:
+                print(e)
+                return False
+
         result = s3_client.download_file(s3_Bucket_Name, s3_File_Name, tmp_file)
 
         # parse file with pyifcb package
@@ -130,17 +152,12 @@ def lambda_handler(event, context):
 
     if valid_file:
         # move file to valid file directory structure
-        year, prefix = extract_year_month_and_prefix(bin_pid)
 
-        destination_key = (
-            f"{username}/{dataset}/{year}/{prefix}/{bin_pid}{file_extension}"
-        )
-
-        destination_key_2 = f"{username}/{dataset}/{bin_pid}{file_extension}"
+        # destination_key_2 = f"{username}/{dataset}/{bin_pid}{file_extension}"
         print("Destination key check:")
         print(destination_key, s3_File_Name)
 
-        if destination_key != s3_File_Name and destination_key_2 != s3_File_Name:
+        if destination_key != s3_File_Name:
             # Copy the object if it's in wrong place
             s3_client.copy_object(
                 Bucket=s3_Bucket_Name,

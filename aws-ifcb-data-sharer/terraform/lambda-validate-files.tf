@@ -15,7 +15,7 @@ module "docker_image" {
   ecr_repo        = "validate-ifcb-files-lambda"
 
   use_image_tag = true
-  image_tag     = "1.21"
+  image_tag     = "1.22"
 
   source_path = "${path.module}/../lambdas/validate-ifcb-files"
 
