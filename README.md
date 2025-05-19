@@ -10,6 +10,7 @@ IFCB Data Sharer allows Imaging FlowCytobot ([IFCB](https://mclanelabs.com/imagi
 #### Linux
 In a terminal:
 ```
+sudo apt update
 sudo apt install git
 ```
 #### Mac
