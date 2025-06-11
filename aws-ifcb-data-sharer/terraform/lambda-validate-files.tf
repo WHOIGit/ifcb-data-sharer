@@ -35,7 +35,7 @@ module "lambda_function" {
   publish        = true
 
   # architecture config
-  memory_size = 256
+  memory_size = 512
   timeout     = 300
   # throttle lambda execution to not kill habon-ifcb api with requests
   reserved_concurrent_executions = 100
