@@ -7,12 +7,12 @@ from pathlib import Path
 from botocore.exceptions import ClientError
 
 # import IFCB utilities from https://github.com/joefutrelle/pyifcb package
-from ifcb.data.adc import AdcFile
-from ifcb.data.hdr import parse_hdr_file
-from ifcb.data.identifiers import parse
+# from ifcb.data.adc import AdcFile
+# from ifcb.data.hdr import parse_hdr_file
+# from ifcb.data.identifiers import parse
 
 s3_client = boto3.client("s3")
-valid_extensions = [".adc", ".hdr", ".roi", ".csv"]
+valid_extensions = [".adc", ".hdr", ".roi"]
 
 
 def extract_year_month_and_prefix(filename):
@@ -34,6 +34,7 @@ def lambda_handler(event, context):
     try:
         s3_Bucket_Name = event["Records"][0]["s3"]["bucket"]["name"]
         s3_File_Name = event["Records"][0]["s3"]["object"]["key"]
+        s3_file_size = event["Records"][0]["s3"]["object"]["size"]
         print(s3_File_Name)
 
         # check the file extension
@@ -56,11 +57,12 @@ def lambda_handler(event, context):
             }
 
         # check file size, reject anything > 250 MB
-        head_response = s3_client.head_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
-        file_size = head_response["ContentLength"]
-        print("file size", file_size)
+        # head_response = s3_client.head_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
+        # file_size = head_response["ContentLength"]
+        print("file size", s3_file_size)
 
-        if file_size > (250 * 1000000):
+        if s3_file_size > (250 * 1000000):
+            print("File over 250MB limit. Deleting.")
             s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
             return {
                 "statusCode": 200,
@@ -78,6 +80,7 @@ def lambda_handler(event, context):
             f"{username}/{dataset}/{year}/{prefix}/{bin_pid}{file_extension}"
         )
 
+        """
         try:
             s3_client.head_object(Bucket=s3_Bucket_Name, Key=destination_key)
             print("File already exists, delete new version")
@@ -93,6 +96,7 @@ def lambda_handler(event, context):
             else:
                 print(e)
                 return False
+        """
 
         result = s3_client.download_file(s3_Bucket_Name, s3_File_Name, tmp_file)
 
@@ -100,9 +104,9 @@ def lambda_handler(event, context):
         # does it return a valid instance of ADC, HDR or ROI file
         if file_extension == ".adc":
             try:
-                adc = AdcFile(tmp_file, True)
-                print("ADC length: ", adc.__len__())
-                print("ADC lid: ", adc.lid)
+                # adc = AdcFile(tmp_file, True)
+                # print("ADC length: ", adc.__len__())
+                # print("ADC lid: ", adc.lid)
                 valid_file = True
                 dynamo_field = "hasAdc"
             except Exception as e:
@@ -113,8 +117,8 @@ def lambda_handler(event, context):
 
         if file_extension == ".hdr":
             try:
-                hdr = parse_hdr_file(tmp_file)
-                print("HDR file: ", hdr)
+                # hdr = parse_hdr_file(tmp_file)
+                # print("HDR file: ", hdr)
                 valid_file = True
                 dynamo_field = "hasHdr"
             except Exception as e:
@@ -129,7 +133,7 @@ def lambda_handler(event, context):
             if mime_type == "application/octet-stream":
                 # check if file PID is valid
                 try:
-                    resp = parse(bin_pid)
+                    # resp = parse(bin_pid)
                     print("valid ROI file.")
                     valid_file = True
                     dynamo_field = "hasRoi"
@@ -143,17 +147,6 @@ def lambda_handler(event, context):
                 s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
                 print("file deleted")
 
-        if file_extension == ".csv":
-            # check if it's a csv file
-            mime_type = magic.from_file(tmp_file, mime=True)
-            if mime_type == "text/csv":
-                print("valid CSV file.")
-                valid_file = True
-                dynamo_field = "hasCsv"
-            else:
-                print("INVALID CSV file.")
-                s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
-                print("file deleted")
         # delete file from tmp dir
         print("remove tmp file")
         os.remove(tmp_file)

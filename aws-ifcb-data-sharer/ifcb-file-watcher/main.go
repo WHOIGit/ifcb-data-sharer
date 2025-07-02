@@ -313,6 +313,11 @@ func main() {
 					}
 				}
 
+				// Check for Rename
+				if event.Op&fsnotify.Rename == fsnotify.Rename {
+					fmt.Printf("RENAMED: %s\n", event.Name)
+				}
+
 				if event.Op&fsnotify.Remove == fsnotify.Remove {
 					fmt.Println("File removed:", event.Name)
 				}

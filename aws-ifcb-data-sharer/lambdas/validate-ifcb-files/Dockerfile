@@ -1,41 +1,19 @@
+# Use the official AWS Lambda Python 3.9 base image
 FROM --platform=linux/x86_64 public.ecr.aws/lambda/python:3.13
 
-RUN dnf update -y && \
-    dnf install -y \
-    gcc \
-    gcc-c++ \
-    gfortran \
-    make \
-    cmake \
-    glibc-devel \
-    libffi-devel \
-    python3-devel \
-    git \
-    tar \
-    gzip \
-    findutils \
-    pkgconf-pkg-config \
-    openblas \
-    openblas-devel \
-    lapack \
-    lapack-devel \
-    atlas \
-    && dnf clean all
+# Copy requirements first to leverage Docker layer caching
+COPY requirements.txt ./
 
-# Set environment variables to help meson find OpenBLAS
-ENV BLAS=OpenBLAS \
-    LAPACK=OpenBLAS \
-    PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/lib/pkgconfig \
-    CFLAGS="-I/usr/include" \
-    LDFLAGS="-L/usr/lib64"
+# Install Python dependencies into the Lambda task root
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
-WORKDIR ${LAMBDA_TASK_ROOT}
-COPY ./*.py ${LAMBDA_TASK_ROOT}
-COPY requirements.txt ${LAMBDA_TASK_ROOT}
+# Copy your function code into the Lambda task root
+COPY . "${LAMBDA_TASK_ROOT}"
 
-# Install the specified packages
-RUN pip install --upgrade pip && \
-    pip install meson ninja && \
-    OPENBLAS=$LDFLAGS pip install --prefer-binary -r requirements.txt
+# (Optional) If your code requires setting environment variables at build-time,
+# you can use ARG and ENV here.
 
+# Specify the Lambda handler (file.function_name)
+# e.g. if your handler is defined in app.py as def lambda_handler(event, context):
 CMD ["app.lambda_handler"]
