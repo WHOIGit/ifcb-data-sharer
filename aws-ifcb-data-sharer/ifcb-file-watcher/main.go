@@ -358,34 +358,33 @@ func main() {
 		fmt.Printf("Watching directory tree: %s\n", dirToWatch)
 	}
 
-	// Sync any existing files to AWS
-	//
-	// Create a new session using the default AWS profile or environment variables
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(awsRegion),
-	})
-	if err != nil {
-		fmt.Println("error creating session:", err)
-	}
-
-	syncManager := s3sync.New(sess)
-
-	// Sync from local to s3
-	if strings.HasSuffix(dirToWatch, "/") {
-		//fmt.Println("The string ends with a '/', slice it off")
-		dirToWatch = dirToWatch[:len(dirToWatch)-1]
-	}
-
-	bucketSyncPath := "s3://" + bucketName + "/" + userName + "/" + datasetName
-	fmt.Println("Sync from Dir:", dirToWatch)
-	fmt.Println("Sync to Bucket:", bucketSyncPath)
-	err = syncManager.Sync(dirToWatch, bucketSyncPath)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Sync Complete", bucketSyncPath)
-
 	if *syncOnly {
+		// Sync any existing files to AWS
+		//
+		// Create a new session using the default AWS profile or environment variables
+		sess, err := session.NewSession(&aws.Config{
+			Region: aws.String(awsRegion),
+		})
+		if err != nil {
+			fmt.Println("error creating session:", err)
+		}
+
+		syncManager := s3sync.New(sess)
+
+		// Sync from local to s3
+		if strings.HasSuffix(dirToWatch, "/") {
+			//fmt.Println("The string ends with a '/', slice it off")
+			dirToWatch = dirToWatch[:len(dirToWatch)-1]
+		}
+
+		bucketSyncPath := "s3://" + bucketName + "/" + userName + "/" + datasetName
+		fmt.Println("Sync from Dir:", dirToWatch)
+		fmt.Println("Sync to Bucket:", bucketSyncPath)
+		err = syncManager.Sync(dirToWatch, bucketSyncPath)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Sync Complete", bucketSyncPath)
 		// exit the program if only syncing
 		os.Exit(0)
 	}
