@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -106,7 +107,7 @@ func UploadFileToS3(awsRegion, bucketName, filePath string, dirToWatch string, u
 	return nil
 }
 
-// UploadFileToS3 uploads a file to an S3 bucket
+// Check if given Time Series name exists
 func checkTimeSeriesExists(awsRegion, bucketName, userName string, datasetName string) bool {
 	// Create a new session using the default AWS profile or environment variables
 	sess, err := session.NewSession(&aws.Config{
@@ -164,7 +165,7 @@ func askForConfirmation(s string) bool {
 	}
 }
 
-// UploadFileToS3 uploads a file to an S3 bucket
+// Get list of existing Time Series
 func getDataSeriesList(awsRegion, bucketName, userName string) []string {
 	// Create a new session using the default AWS profile or environment variables
 	sess, err := session.NewSession(&aws.Config{
@@ -280,6 +281,7 @@ func main() {
 					return
 				}
 				// fmt.Println("Event:", event)
+				nowUTC := time.Now().UTC()
 
 				if event.Op&fsnotify.Create == fsnotify.Create {
 					fi, err := os.Stat(event.Name)
@@ -294,9 +296,9 @@ func main() {
 					// new file added, upload to AWS
 					err = UploadFileToS3(awsRegion, bucketName, event.Name, dirToWatch, userName, datasetName)
 					if err != nil {
-						fmt.Println("Error uploading file:", err)
+						fmt.Println(nowUTC.Format("2006-01-02 15:04:05"), "Error uploading file:", err)
 					} else {
-						fmt.Println("Successfully uploaded file to S3!")
+						fmt.Println(nowUTC.Format("2006-01-02 15:04:05"), "Successfully uploaded file to S3!")
 					}
 				}
 
@@ -305,9 +307,9 @@ func main() {
 					// file modified, upload to AWS
 					err = UploadFileToS3(awsRegion, bucketName, event.Name, dirToWatch, userName, datasetName)
 					if err != nil {
-						fmt.Println("Error uploading file:", err)
+						fmt.Println(nowUTC.Format("2006-01-02 15:04:05"), "Error uploading file:", err)
 					} else {
-						fmt.Println("Successfully uploaded file to S3!")
+						fmt.Println(nowUTC.Format("2006-01-02 15:04:05"), "Successfully uploaded file to S3!")
 					}
 				}
 
