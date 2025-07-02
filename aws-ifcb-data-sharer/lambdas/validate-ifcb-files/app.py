@@ -55,6 +55,18 @@ def lambda_handler(event, context):
                 "body": json.dumps(f"{s3_File_Name} not valid file type. Deleted"),
             }
 
+        # check file size, reject anything > 250 MB
+        head_response = s3_client.head_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
+        file_size = head_response["ContentLength"]
+        print("file size", file_size)
+
+        if file_size > (250 * 1000000):
+            s3_client.delete_object(Bucket=s3_Bucket_Name, Key=s3_File_Name)
+            return {
+                "statusCode": 200,
+                "body": json.dumps(f"{s3_File_Name} file size > 250 MB. Deleted"),
+            }
+
         # check if file already exists in final location, if not then
         # download file to tmp directory to test file contents.
         # get the Bin pid, pyifcb needs correct file name to parse

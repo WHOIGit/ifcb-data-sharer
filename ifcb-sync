@@ -247,7 +247,7 @@ sync() {
         usage
         exit 1
     fi
-    ./$EXECUTABLE -sync-only "$target_dir" "$target_time_series" > ifcb-file-watcher.log 2>&1 &
+    ./$EXECUTABLE -sync-only "$target_dir" "$target_time_series" > ifcb-file-watcher-sync.log 2>&1 &
     echo "Sync complete for '$target_dir' and '$target_time_series'"
 }
 

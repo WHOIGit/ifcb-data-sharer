@@ -220,12 +220,15 @@ func main() {
 
 	// load .env file
 	err := godotenv.Load(".env")
-	userName := os.Getenv("USER_ACCOUNT")
 
 	if err != nil {
 		fmt.Println("Error loading .env file. You need to put your AWS access key/secret key in .env file")
 		os.Exit(1)
 	}
+
+	userName := os.Getenv("USER_ACCOUNT")
+	token := os.Getenv("AWS_ACCESS_KEY_ID")
+	fmt.Println("AWS KEY", token)
 
 	// handle list function, return results and exit
 	if *listTimeSeries {
@@ -367,8 +370,12 @@ func main() {
 	}
 
 	bucketSyncPath := "s3://" + bucketName + "/" + userName + "/" + datasetName
+	fmt.Println("Sync from Dir:", dirToWatch)
 	fmt.Println("Sync to Bucket:", bucketSyncPath)
-	syncManager.Sync(dirToWatch, bucketSyncPath)
+	err = syncManager.Sync(dirToWatch, bucketSyncPath)
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println("Sync Complete", bucketSyncPath)
 
 	if *syncOnly {

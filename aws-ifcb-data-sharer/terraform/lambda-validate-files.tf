@@ -9,13 +9,14 @@ provider "docker" {
 }
 
 module "docker_image" {
-  source = "terraform-aws-modules/lambda/aws//modules/docker-build"
+  source  = "terraform-aws-modules/lambda/aws//modules/docker-build"
+  version = "7.21.0"
 
   create_ecr_repo = true
   ecr_repo        = "validate-ifcb-files-lambda"
 
   use_image_tag = true
-  image_tag     = "1.22"
+  image_tag     = "1.24"
 
   source_path = "${path.module}/../lambdas/validate-ifcb-files"
 
@@ -39,6 +40,7 @@ module "lambda_function" {
   timeout     = 300
   # throttle lambda execution to not kill habon-ifcb api with requests
   reserved_concurrent_executions = 100
+  #ephemeral_storage_size         = 1024
 
   # container config
   image_uri     = module.docker_image.image_uri
