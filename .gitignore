@@ -64,4 +64,5 @@ process.log.tmp
 save_pid.txt
 *.log
 locks/
+.last_upload
 
