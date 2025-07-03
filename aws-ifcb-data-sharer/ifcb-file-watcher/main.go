@@ -81,12 +81,14 @@ func main() {
 
 	//  run the loop in its own goroutine:
 	done := make(chan bool)
-	go func() {
-		for t := range ticker.C {
-			fmt.Println("received tick at", t)
-			uploadNewFiles(*stampFile, awsRegion, bucketName, dirToWatch, userName, datasetName)
-		}
-	}()
+	if !*syncOnly {
+		go func() {
+			for t := range ticker.C {
+				fmt.Println("received tick at", t)
+				uploadNewFiles(*stampFile, awsRegion, bucketName, dirToWatch, userName, datasetName)
+			}
+		}()
+	}
 
 	if *syncOnly {
 		// Sync any existing files to AWS
