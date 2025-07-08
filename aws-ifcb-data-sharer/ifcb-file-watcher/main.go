@@ -26,12 +26,13 @@ func main() {
 	// return a list of existing time series
 	listTimeSeries := flag.Bool("list", false, "List existing time series for this user")
 
-	stampFile := flag.String("stamp", filepath.Join(os.Getenv("PWD"), ".last_upload"), "path to stamp file")
+	// stampFile := flag.String("stamp", filepath.Join(os.Getenv("PWD"), ".last_upload"), "path to stamp file")
 	flag.Parse()
 
 	dirToWatch := flag.Arg(0)
 	fullDatasetName := flag.Arg(1)
 	datasetName := removeSpecialCharacters(fullDatasetName)
+	stampFile := ".last_upload_" + datasetName
 
 	// load .env file
 	err := godotenv.Load(".env")
@@ -85,7 +86,7 @@ func main() {
 		go func() {
 			for t := range ticker.C {
 				fmt.Println("received tick at", t)
-				uploadNewFiles(*stampFile, awsRegion, bucketName, dirToWatch, userName, datasetName)
+				uploadNewFiles(stampFile, awsRegion, bucketName, dirToWatch, userName, datasetName)
 			}
 		}()
 	}
@@ -128,6 +129,7 @@ func uploadNewFiles(stampFile string, awsRegion, bucketName, dirToWatch string, 
 	// ensure stamp file exists
 	if _, err := os.Stat(stampFile); os.IsNotExist(err) {
 		// create with zero time or current time. we'll treat as current to avoid bulk first run.
+		log.Printf("creating stamp file.")
 		f, err := os.Create(stampFile)
 		if err != nil {
 			log.Fatalf("creating stamp file: %v", err)
