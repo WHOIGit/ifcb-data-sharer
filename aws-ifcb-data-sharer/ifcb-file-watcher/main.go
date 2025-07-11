@@ -232,7 +232,9 @@ func UploadFileToS3(awsRegion, bucketName, filePath string, dirToWatch string, u
 	}
 
 	// set S3 key name using full file path except for the dirToWatch parent directories
+	// replace any Windows file paths
 	// handle dirToWatch that uses relative pathname in same pwd
+	dirToWatch = filepath.ToSlash(dirToWatch)
 	dirToWatch, _ = strings.CutPrefix(dirToWatch, "./")
 
 	// check if dirToWatch arg included a end / or not to create clean S3 key name

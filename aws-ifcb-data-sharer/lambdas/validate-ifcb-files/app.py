@@ -40,6 +40,8 @@ def lambda_handler(event, context):
         # check the file extension
         # Extract the file extension (returns a tuple)
         s3_Root, file_extension = os.path.splitext(s3_File_Name)
+        # check for any Windows backslashes
+        s3_Root = s3_Root.replace("%5C", "/")
         username = s3_Root.split("/")[0]
         dataset = s3_Root.split("/")[1]
 
