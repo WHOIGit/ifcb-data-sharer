@@ -42,8 +42,12 @@ func main() {
 	}
 
 	userName := os.Getenv("USER_ACCOUNT")
-	awsRegion := "us-east-1"               // Replace with your AWS region
-	bucketName := "ifcb-data-sharer.files" // Replace with your S3 bucket name
+	awsRegion := "us-east-1" // Replace with your AWS region
+	//bucketName := "ifcb-data-sharer.files" // Replace with your S3 bucket name
+	bucketName := os.Getenv("BUCKET_NAME")
+	if bucketName == "" {
+		bucketName = "ifcb-data-sharer.files"
+	}
 
 	// handle list function, return results and exit
 	if *listTimeSeries {
