@@ -21,7 +21,7 @@ Download and install [Git for Windows](https://git-scm.com/download/win). During
 
 3. Install the `ifcb-sync` script.
 
-#### IFCB host
+#### IFCB sensor installation
 In a terminal:
 ```
 cd /home/ifcb
@@ -31,7 +31,7 @@ chmod +x ifcb-sync
 sudo ln -s /home/ifcb/ifcb-data-sharer/ifcb-sync /usr/local/bin/
 ```
 
-#### Linux or MacOS server
+#### Linux or MacOS server installation
 In a terminal:
 ```
 INSTALLDIR=$(pwd)
@@ -41,7 +41,7 @@ chmod +x ifcb-sync
 sudo ln -s "$INSTALLDIR/ifcb-sync" /usr/local/bin/
 ```
 
-#### Windows server
+#### Windows server installation
 Open a Git Bash terminal 'as an Administrator' - right click icon in start menu > 'More' > 'Run as administrator'. In terminal:
 ```
 git clone https://github.com/WHOIGit/ifcb-data-sharer.git
