@@ -1,11 +1,12 @@
 # IFCB Data Sharer
 
-IFCB Data Sharer allows Imaging FlowCytobot ([IFCB](https://mclanelabs.com/imaging-flowcytobot/)) operator groups to share their data through an [IFCB dashboard](https://github.com/WHOIGit/ifcbdb.git) hosted at the Woods Hole Oceanographic Institution (https://habon-ifcb.whoi.edu). Depending on how it's invoked, the program either performs a one-time file synchronization or continuosly monitors a specified data directory (e.g., on either an IFCB or a Linux, Mac, or Windows OS server), uploading any new files created within the directory to habon-ifcb.whoi.edu via an AWS data pipeline.
+IFCB Data Sharer allows Imaging FlowCytobot ([IFCB](https://mclanelabs.com/imaging-flowcytobot/)) operator groups to share their data through an [IFCB dashboard](https://github.com/WHOIGit/ifcbdb.git) hosted at the Woods Hole Oceanographic Institution (https://habon-ifcb.whoi.edu). Depending on how it's invoked, the program either performs a one-time file synchronization or continuosly monitors a specified data directory, uploading any new files created within the directory to habon-ifcb.whoi.edu via an AWS data pipeline.
 
 ## Installation procedure
+IFCB Data Sharer can be installed either directly on an IFCB sensor running Debian Linux or on a separate server running Debian Linux, macOS, or Windows. The installation steps are almost identical across these operating systems. Differences are described within the sections below under the subheadings for each OS.
 
-1. Contact mbrosnahan@whoi.edu to request an account and receive access credentials
-2. Ensure that Git is installed on your host.   
+### 1. Contact mbrosnahan@whoi.edu to request an account and receive access credentials
+### 2. Ensure that Git is installed on your host.   
 
 #### Linux
 In a terminal:
@@ -19,7 +20,7 @@ Download and install Xcode through the [Mac App store](https://apps.apple.com/us
 #### Windows
 Download and install [Git for Windows](https://git-scm.com/download/win). During installation, be sure to enable symbolic links.
 
-3. Install the `ifcb-sync` script.
+### 3. Install the `ifcb-sync` script.
 
 #### IFCB sensor installation
 In a terminal:
@@ -31,7 +32,7 @@ chmod +x ifcb-sync
 sudo ln -s /home/ifcb/ifcb-data-sharer/ifcb-sync /usr/local/bin/
 ```
 
-#### Linux or MacOS server installation
+#### Linux and MacOS server installations
 In a terminal:
 ```
 INSTALLDIR=$(pwd)
@@ -42,27 +43,29 @@ sudo ln -s "$INSTALLDIR/ifcb-sync" /usr/local/bin/
 ```
 
 #### Windows server installation
-Open a Git Bash terminal 'as an Administrator' - right click icon in start menu > 'More' > 'Run as administrator'. In terminal:
+Open a terminal windown in `Git Bash` using 'as an Administrator' option. Right click icon in start menu > 'More' > 'Run as administrator'. 
+In the terminal window:
 ```
 git clone https://github.com/WHOIGit/ifcb-data-sharer.git
 cd ifcb-data-sharer
 chmod +x ifcb-sync
 mkdir -p /usr/local/bin
 ```
-Create a Windows symlink for ifcb-sync. Open and run cmd.exe as an administrator. In new cmd terminal:
+Create a Windows symlink for ifcb-sync. 
+Open and run `cmd.exe` as an administrator, then in the new terminal window:
 ```
 cd C:\Program Files\Git\usr\local\bin
 mklink ifcb-sync C:\path\to\ifcb-data-sharer\ifcb-sync
 ```
 where `C:\path\to\ifcb-data-sharer` is the location where this repo was cloned. Default is `C:\Users\USERNAME\ifcb-data-sharer`. 
 
-4. Create a new `.env` file in the same directory. In a terminal, copy the example code from the `.env.example`. Use Git Bash terminal if installing on a Windows host.
+### 4. Create a new `.env` file in the same directory. In a terminal, copy the example code from the `.env.example`. Use Git Bash terminal if installing on a Windows host.
 
 ```
 cp .env.example .env
 ```
 
-5. Update the .env variables to the AWS Key/AWS Secret/User Account that you received from WHOI using a text editor (e.g., `nano .env`).
+### 5. Update the .env variables to the AWS Key/AWS Secret/User Account that you received from WHOI using a text editor (e.g., `nano .env`).
 
 ```
 AWS_ACCESS_KEY_ID=your-key-here
